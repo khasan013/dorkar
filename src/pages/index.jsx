@@ -31,10 +31,12 @@ import PartnerRegistrationPage from './PartnerRegistrationPage'
 import TermsConditionsPage from './TermsConditionsPage'
 import PrivacyPolicyPage from './PrivacyPolicyPage'
 import HowItWorksPage from './HowItWorksPage'
+import ServicesPage from './ServicesPage'
 import { DetailedPage } from './PageRenderer'
 import SiteFooter from './SiteFooter'
 
 const routes = {
+  '/services': ServicesPage,
   '/ride': RideSharingPage,
   '/food': FoodDeliveryPage,
   '/parcel': ParcelDeliveryPage,

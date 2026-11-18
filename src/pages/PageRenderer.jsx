@@ -20,19 +20,15 @@ function Brand({ light=false }) { return <a href="/" className={`brand ${light?'
 function StoreBadges(){return <div className="store-badges"><a href="#download" className="store-badge google-play-badge" aria-label="Get Dorkar on Google Play"><img className="play-store-logo" src={googlePlayIcon} alt=""/><span><small>GET IT ON</small><b>Google Play</b></span></a></div>}
 function Header(){
   const [open,setOpen]=useState(false)
-  const [servicesOpen,setServicesOpen]=useState(false)
   const pathname=window.location.pathname.replace(/\/+$/,'')||'/'
   const isHome=pathname==='/'
-  const isServices=['/ride','/food','/parcel','/blood'].some(route=>pathname===route||pathname.startsWith(`${route}/`))
+  const isServices=pathname==='/services'||['/ride','/food','/parcel','/blood'].some(route=>pathname===route||pathname.startsWith(`${route}/`))
   const isHowItWorks=pathname==='/how-it-works'
   const isAbout=pathname==='/about'
   const isContact=pathname==='/contact'
-  const servicesHref=[['Ride Sharing','/ride'],['Food Delivery','/food'],['Parcel Delivery','/parcel'],['Blood Donation','/blood']]
   return <header className="header"><div className="nav-wrap"><Brand/><nav className={open?'nav open':'nav'} aria-label="Main navigation">
     <a className={isHome?'nav-active':''} aria-current={isHome?'page':undefined} href="/">Home</a>
-    <div className="nav-service-menu"><button className={`nav-service-trigger ${isServices?'nav-active':''} ${servicesOpen?'expanded':''}`} type="button" aria-current={isServices?'page':undefined} aria-expanded={servicesOpen} onClick={()=>setServicesOpen(!servicesOpen)}>Services <span aria-hidden="true">⌄</span></button>
-      {servicesOpen&&<div className="nav-service-dropdown">{servicesHref.map(([label,href])=><a className={pathname===href?'nav-active':''} aria-current={pathname===href?'page':undefined} href={href} key={href} onClick={()=>{setServicesOpen(false);setOpen(false)}}>{label}<span aria-hidden="true">→</span></a>)}</div>}
-    </div>
+    <a className={`nav-service-trigger nav-service-link ${isServices?'nav-active':''}`} aria-current={isServices?'page':undefined} href="/services" onClick={()=>setOpen(false)}>Services</a>
     <a className={isHowItWorks?'nav-active':''} aria-current={isHowItWorks?'page':undefined} href="/how-it-works" onClick={()=>setOpen(false)}>How It Works</a>
     <a className={isAbout?'nav-active':''} aria-current={isAbout?'page':undefined} href="/about" onClick={()=>setOpen(false)}>About</a>
     <a className={isContact?'nav-active':''} aria-current={isContact?'page':undefined} href="/contact" onClick={()=>setOpen(false)}>Contact</a>

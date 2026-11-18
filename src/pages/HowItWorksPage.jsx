@@ -1,5 +1,3 @@
-import { DetailedPage } from './PageRenderer'
-
 const steps = [
   ['01', 'Choose a service', 'Pick a ride, a meal, a parcel delivery, or blood donation support.'],
   ['02', 'Add your details', 'Enter the locations and information needed for your request.'],
@@ -15,8 +13,7 @@ const serviceLinks = [
 ]
 
 export default function HowItWorksPage() {
-  return <DetailedPage>
-    <div className="how-page">
+  return <div className="how-page">
       <section className="how-hero">
         <span className="eyebrow">A SIMPLE WAY TO GET THINGS DONE</span>
         <h1>How Dorkar works</h1>
@@ -51,6 +48,5 @@ export default function HowItWorksPage() {
           </a>)}
         </div>
       </section>
-    </div>
-  </DetailedPage>
+  </div>
 }
