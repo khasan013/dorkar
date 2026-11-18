@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <filter id="remove-light-checker" color-interpolation-filters="sRGB">
+      <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  3 -3 0 0 0" />
+    </filter>
+  </defs>
+  <image href="/D-Logo.png" width="256" height="256" filter="url(#remove-light-checker)" />
+</svg>

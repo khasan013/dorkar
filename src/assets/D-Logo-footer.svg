@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="210 219 850 810">
+  <defs>
+    <filter id="red-logo-transparent" color-interpolation-filters="sRGB">
+      <feColorMatrix values="0 0 0 0 0.94  0 0 0 0 0.08  0 0 0 0 0.21  3 -3 0 0 0" />
+    </filter>
+  </defs>
+  <image href="/D-Logo.png" x="0" y="0" width="1254" height="1254" filter="url(#red-logo-transparent)" />
+</svg>
