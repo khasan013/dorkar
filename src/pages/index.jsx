@@ -30,6 +30,7 @@ import ContactUsPage from './ContactUsPage'
 import PartnerRegistrationPage from './PartnerRegistrationPage'
 import TermsConditionsPage from './TermsConditionsPage'
 import PrivacyPolicyPage from './PrivacyPolicyPage'
+import HowItWorksPage from './HowItWorksPage'
 import { DetailedPage } from './PageRenderer'
 import SiteFooter from './SiteFooter'
 
@@ -65,6 +66,7 @@ const routes = {
   '/partner': PartnerRegistrationPage,
   '/terms': TermsConditionsPage,
   '/privacy': PrivacyPolicyPage,
+  '/how-it-works': HowItWorksPage,
 }
 
 export default function Pages() {
