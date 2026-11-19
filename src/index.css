@@ -1,2 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root{font-family:'DM Sans',sans-serif;color:#111323;background:#fff;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-optical-sizing:auto;font-weight:400;--red:#ef233c;--red-dark:#d91432;--ink:#111323;--slate:#34384d;--muted:#70778a;--pink:#fff0f2;--orange:#fff1e5;--blue:#eaf3ff;--navy:#211f3d;--border:#e8e8ef}*{box-sizing:border-box}body{margin:0;min-width:320px}a{color:inherit;text-decoration:none}button{font:inherit}a:focus-visible,button:focus-visible{outline:3px solid #ff7890;outline-offset:3px}::selection{background:#ffdce3}
+.auth-api-form button:disabled{cursor:wait;opacity:.72;transform:none}
+.auth-api-form .auth-error{margin:12px 0 0;color:#b4233b}
+.auth-redirect{min-height:60vh;display:grid;place-items:center;padding:24px;color:#70778a;font-size:15px}

@@ -35,6 +35,19 @@ import HowItWorksPage from './HowItWorksPage'
 import ServicesPage from './ServicesPage'
 import { DetailedPage } from './PageRenderer'
 import SiteFooter from './SiteFooter'
+import { useEffect } from 'react'
+import { readAuthSession, redirectToLogin } from '../auth/session'
+
+const protectedPaths = new Set([
+  '/dashboard',
+  '/profile',
+  '/settings',
+  '/payment',
+  '/notifications',
+  '/ride/history',
+  '/orders/history',
+  '/activity',
+])
 
 const routes = {
   '/services': ServicesPage,
@@ -75,8 +88,15 @@ const routes = {
 
 export default function Pages() {
   const path = window.location.pathname.replace(/\/$/, '') || '/'
+  const isProtected = protectedPaths.has(path) && !readAuthSession()
+  useEffect(() => {
+    if (isProtected) redirectToLogin()
+  }, [isProtected])
+
+  if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
   if (path === '/') return <HomePage />
-  const Page = routes[path] || UserDashboardPage
+  const Page = routes[path]
+  if (!Page) return <HomePage />
   if (path === '/login' || path === '/register' || path === '/dashboard') return <><Page /><SiteFooter /></>
   return <DetailedPage><Page /></DetailedPage>
 }

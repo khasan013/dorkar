@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { signOut } from '../auth/session'
 import heroScenery from '../assets/Hero-bg-illlustration.png'
 
 const initialProfile = { name: 'Khalid Hasan', phone: '', email: '', birthday: '', area: '' }
@@ -155,6 +156,6 @@ export default function ProfilePage({ editable = false }) {
       </div>
     </div>
 
-    {logoutOpen&&<div className="profile-modal-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setLogoutOpen(false)}}><section className="profile-logout-modal" role="dialog" aria-modal="true" aria-labelledby="profile-logout-title"><span className="profile-logout-icon"><ProfileIcon name="logout"/></span><h2 id="profile-logout-title">Log out of Dorkar?</h2><p>You can sign back in at any time to manage your account.</p><div><button className="button outline" type="button" onClick={()=>setLogoutOpen(false)}>Stay signed in</button><a className="button primary" href="/login">Log Out</a></div></section></div>}
+    {logoutOpen&&<div className="profile-modal-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setLogoutOpen(false)}}><section className="profile-logout-modal" role="dialog" aria-modal="true" aria-labelledby="profile-logout-title"><span className="profile-logout-icon"><ProfileIcon name="logout"/></span><h2 id="profile-logout-title">Log out of Dorkar?</h2><p>You can sign back in at any time to manage your account.</p><div><button className="button outline" type="button" onClick={()=>setLogoutOpen(false)}>Stay signed in</button><button className="button primary" type="button" onClick={signOut}>Log Out</button></div></section></div>}
   </main>
 }

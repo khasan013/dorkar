@@ -2,6 +2,7 @@ import { useState } from 'react'
 import dorkarLogo from '../assets/D-Logo.png'
 import heroScenery from '../assets/Hero-bg-illlustration.png'
 import scooter from '../assets/signinpage.png'
+import { readAuthSession, signOut } from '../auth/session'
 
 const services = [
   { name: 'Ride Sharing', description: 'Book a ride quickly and at a fair price.', icon: 'car', color: 'ride', href: '/ride' },
@@ -38,6 +39,9 @@ function DashboardNavbar() {
   const [menu, setMenu] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [location, setLocation] = useState('Dhaka')
+  const user = readAuthSession()?.user
+  const userName = user?.name || 'Dorkar user'
+  const initials = userName.split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('')
   const links = [['Home', '/dashboard'], ['Ride', '/ride'], ['Food', '/food'], ['Parcel', '/parcel'], ['Blood Donation', '/blood']]
 
   return <header className="dashboard-nav">
@@ -57,8 +61,8 @@ function DashboardNavbar() {
           {menu === 'notifications' && <div className="nav-popover notification-popover"><b>Notifications</b><a href="/notifications">Your driver is on the way <small>Ride · 10 min ago</small></a><a href="/notifications">Kacchi Bhai received your order <small>Food · 1 hour ago</small></a><a className="popover-link" href="/notifications">View all notifications →</a></div>}
         </div>
         <div className="nav-menu-wrap profile-menu-wrap">
-          <button className="profile-trigger" onClick={() => setMenu(menu === 'profile' ? '' : 'profile')} aria-expanded={menu === 'profile'}><span className="profile-avatar">KH</span><span className="profile-name">Khalid Hasan</span><Icon name="chevron" size={17}/></button>
-          {menu === 'profile' && <div className="nav-popover profile-popover"><b>Khalid Hasan</b><small>khalid@example.com</small><a href="/profile">My Profile</a><a href="/profile">Account Settings</a><a href="/login">Log out</a></div>}
+          <button className="profile-trigger" onClick={() => setMenu(menu === 'profile' ? '' : 'profile')} aria-expanded={menu === 'profile'}><span className="profile-avatar">{initials}</span><span className="profile-name">{userName}</span><Icon name="chevron" size={17}/></button>
+          {menu === 'profile' && <div className="nav-popover profile-popover"><b>{userName}</b><small>{user?.email || user?.phone}</small><a href="/profile">My Profile</a><a href="/settings">Account Settings</a><a href="/login" onClick={(event) => { event.preventDefault(); signOut() }}>Log out</a></div>}
         </div>
       </div>
     </div>
@@ -66,10 +70,12 @@ function DashboardNavbar() {
 }
 
 function WelcomeHero() {
+  const user = readAuthSession()?.user
+  const firstName = user?.name?.trim().split(/\s+/)[0] || 'there'
   return <section className="dashboard-hero">
     <img className="dashboard-landscape" src={heroScenery} alt="" />
     <div className="dashboard-hero-copy">
-      <div className="dashboard-greeting">Good Evening, Khalid! <span>👋</span></div>
+      <div className="dashboard-greeting">Welcome, {firstName}! <span>👋</span></div>
       <p className="dashboard-welcome">Your all-in-one on-demand services in Bangladesh.</p>
       <h1>Your Daily Needs,<br/>One App — <span>Dorkar</span></h1>
       <p className="dashboard-description">Ride, order food, send parcels, or donate blood —<br className="dashboard-desktop-break"/> all in one place.</p>
