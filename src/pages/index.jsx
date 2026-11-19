@@ -7,6 +7,7 @@ import SignInPage from './SignInPage'
 import SignUpPage from './SignUpPage'
 import UserDashboardPage from './UserDashboardPage'
 import ProfilePage from './ProfilePage'
+import SettingsPage from './SettingsPage'
 import RideBookingPage from './RideBookingPage'
 import RideTrackingPage from './RideTrackingPage'
 import FoodRestaurantsPage from './FoodRestaurantsPage'
@@ -45,6 +46,7 @@ const routes = {
   '/register': SignUpPage,
   '/dashboard': UserDashboardPage,
   '/profile': ProfilePage,
+  '/settings': SettingsPage,
   '/ride/booking': RideBookingPage,
   '/ride/tracking': RideTrackingPage,
   '/food/restaurants': FoodRestaurantsPage,
