@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getPostLoginPath, saveAuthSession } from './session'
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081').trim().replace(/\/$/, '')
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://dorker-backend.onrender.com').trim().replace(/\/$/, '')
 
 export default function AuthForm({ path }) {
   const isRegister = path === '/register'
