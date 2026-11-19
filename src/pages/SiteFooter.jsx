@@ -22,7 +22,6 @@ const groups = [
     links: [
       ['Sign in', '/login'],
       ['Create an account', '/register'],
-      ['Your dashboard', '/dashboard'],
     ],
   },
 ]
