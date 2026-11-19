@@ -87,7 +87,8 @@ const routes = {
 }
 
 export default function Pages() {
-  const path = window.location.pathname.replace(/\/$/, '') || '/'
+  const requestedPath = window.location.pathname.replace(/\/$/, '') || '/'
+  const path = requestedPath === '/signin' ? '/login' : requestedPath === '/signup' ? '/register' : requestedPath
   const isProtected = protectedPaths.has(path) && !readAuthSession()
   useEffect(() => {
     if (isProtected) redirectToLogin()
