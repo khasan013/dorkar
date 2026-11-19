@@ -55,11 +55,9 @@ export default function SiteFooter() {
 
         <div className="footer-contact">
           <h2>Need a hand?</h2>
-          <p>Our customer care team is here to help with your Dorkar services.</p>
-          <span className="footer-phone-label">Company hotline</span>
-          <strong>01303057903</strong>
-          <small>Replace this placeholder with Dorkar’s official number.</small>
+          <p>Find answers to common questions or send the Dorkar team a support request.</p>
           <a className="footer-contact-link" href="/support">Visit Help & Support →</a>
+          <a className="footer-contact-link" href="/contact">Contact the Dorkar team →</a>
         </div>
       </div>
 
