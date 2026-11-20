@@ -89,7 +89,6 @@ const routes = {
   '/blood': BloodDonationPage,
   '/login': SignInPage,
   '/register': SignUpPage,
-  '/dashboard': UserDashboardPage,
   '/admin': AdminDashboardPage,
   '/admin/dashboard': AdminDashboardPage,
   '/admin/users': AdminUsersPage,
@@ -106,7 +105,6 @@ const routes = {
   '/admin/settings': AdminSettingsPage,
   '/admin/access': AdminRolesPage,
   '/admin/logs': AdminSystemLogsPage,
-  '/profile': ProfilePage,
   '/settings': SettingsPage,
   '/ride/booking': RideBookingPage,
   '/ride/tracking': RideTrackingPage,
@@ -155,9 +153,11 @@ export default function Pages() {
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (isAdminPath && !hasAdminPageAccess) return <main className="admin-denied"><div><span>403</span><h1>Admin role does not allow this area</h1><p>Your account can only manage the modules assigned to its role. Contact a Super Admin if you need access.</p><a href="/admin">Return to your admin dashboard</a></div></main>
   if (path === '/') return <HomePage />
+  if (path === '/dashboard') return <><UserDashboardPage /><SiteFooter /></>
+  if (path === '/profile') return <DetailedPage><ProfilePage /></DetailedPage>
   const Page = routes[path]
   if (!Page) return <HomePage />
   if (isAdminPath) return <Page />
-  if (path === '/login' || path === '/register' || path === '/dashboard') return <><Page /><SiteFooter /></>
+  if (path === '/login' || path === '/register') return <><Page /><SiteFooter /></>
   return <DetailedPage><Page /></DetailedPage>
 }
