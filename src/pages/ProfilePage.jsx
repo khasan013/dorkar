@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
-import { readAuthSession, signOut } from '../auth/session'
+import { readAuthSession, saveAuthSession, signOut } from '../auth/session'
+import { uploadMyProfilePhoto } from '../services/profileApi'
 import heroScenery from '../assets/Hero-bg-illlustration.png'
+import './ProfilePage.css'
 
 const initialProfile = { name: 'Khalid Hasan', phone: '', email: '', birthday: '', area: '' }
 const readPreviewValue = (key, fallback) => {
@@ -41,7 +43,9 @@ export default function ProfilePage({ editable = false }) {
   const visibleNavItems = isAdmin ? navItems.filter(([icon]) => icon === 'profile') : navItems
   const [profile, setProfile] = useState(() => readPreviewValue('dorkar-profile-preview', initialProfile))
   const [savedProfile, setSavedProfile] = useState(() => readPreviewValue('dorkar-profile-preview', initialProfile))
-  const [avatar, setAvatar] = useState('')
+  const [avatar, setAvatar] = useState(() => session?.user?.avatarUrl || '')
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoNotice, setPhotoNotice] = useState('')
   const [notice, setNotice] = useState('')
   const [showLocationForm, setShowLocationForm] = useState(false)
   const [locations, setLocations] = useState(() => readPreviewValue('dorkar-profile-locations-preview', []))
@@ -73,15 +77,44 @@ export default function ProfilePage({ editable = false }) {
     setNotice('Your unsaved changes were discarded.')
   }
 
-  const chooseAvatar = (event) => {
+  const chooseAvatar = async (event) => {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setNotice('Choose an image file for your profile picture.')
+    event.target.value = ''
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setPhotoNotice('Choose a JPG, PNG, or WebP image.')
       return
     }
-    setAvatar(URL.createObjectURL(file))
-    setNotice('Photo preview updated. Connect the avatar API to save it to your account.')
+    if (file.size > 8 * 1024 * 1024) {
+      setPhotoNotice('Choose an image smaller than 8 MB.')
+      return
+    }
+    if (!session?.accessToken) {
+      setPhotoNotice('Sign in to save a profile picture.')
+      return
+    }
+
+    const previousAvatar = avatar
+    const previewUrl = URL.createObjectURL(file)
+    setAvatar(previewUrl)
+    setPhotoUploading(true)
+    setPhotoNotice('Uploading your profile picture…')
+    try {
+      const updatedUser = await uploadMyProfilePhoto(file, session.accessToken)
+      const savedUrl = updatedUser?.avatarUrl || ''
+      setAvatar(savedUrl)
+      const currentSession = readAuthSession()
+      if (currentSession) {
+        saveAuthSession({ ...currentSession, user: { ...currentSession.user, ...updatedUser } })
+      }
+      setPhotoNotice('Your profile picture has been saved.')
+    } catch (error) {
+      setAvatar(previousAvatar)
+      setPhotoNotice(error.message || 'Could not save your profile picture. Please try again.')
+    } finally {
+      URL.revokeObjectURL(previewUrl)
+      setPhotoUploading(false)
+    }
   }
 
   const saveLocation = (event) => {
@@ -116,10 +149,11 @@ export default function ProfilePage({ editable = false }) {
         <div className="profile-user-card">
           <div className="profile-avatar-wrap">
             {avatar ? <img className="profile-avatar" src={avatar} alt={`${profile.name} profile`}/> : <div className="profile-avatar profile-avatar-initials" aria-label={`${profile.name} initials`}>{initials}</div>}
-            {editable&&<><button className="profile-avatar-edit" type="button" onClick={()=>avatarInput.current?.click()} aria-label="Change profile photo"><ProfileIcon name="camera"/></button><input ref={avatarInput} className="profile-file-input" type="file" accept="image/*" onChange={chooseAvatar}/></>}
+            {editable&&<><button className="profile-avatar-edit" type="button" onClick={()=>avatarInput.current?.click()} aria-label={photoUploading?'Uploading profile picture':'Change profile photo'} disabled={photoUploading}><ProfileIcon name="camera"/></button><input ref={avatarInput} className="profile-file-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseAvatar}/></>}
           </div>
           <h2>{profile.name || 'Your name'}</h2><p>{profile.phone || 'Add your phone number'}</p>
           <span className="profile-verified"><i/> Account profile</span>
+          {editable&&photoNotice&&<p className="profile-photo-status" role="status">{photoNotice}</p>}
         </div>
         <nav className="profile-nav" aria-label="Profile menu">
           <span className="profile-nav-label">ACCOUNT</span>

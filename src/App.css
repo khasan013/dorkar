@@ -467,3 +467,5 @@ body:has(.auth-layout){background:radial-gradient(ellipse at 7% 15%,#fff0f3,tran
 /* Footer layout after removing the account column */
 .footer-main{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr)}
 @media(max-width:1050px){.footer-main{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:25px}.footer-intro,.footer-contact{grid-column:1/-1}.footer-contact{border-left:0;padding-left:0}}
+
+.dashboard-page .profile-avatar img{width:100%;height:100%;border-radius:inherit;object-fit:cover}
