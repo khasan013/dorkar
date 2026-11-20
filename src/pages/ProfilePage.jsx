@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { signOut } from '../auth/session'
+import { readAuthSession, signOut } from '../auth/session'
 import heroScenery from '../assets/Hero-bg-illlustration.png'
 
 const initialProfile = { name: 'Khalid Hasan', phone: '', email: '', birthday: '', area: '' }
@@ -36,6 +36,9 @@ function ProfileIcon({ name }) {
 }
 
 export default function ProfilePage({ editable = false }) {
+  const session = readAuthSession()
+  const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(String(session?.user?.role || '').toUpperCase())
+  const visibleNavItems = isAdmin ? navItems.filter(([icon]) => icon === 'profile') : navItems
   const [profile, setProfile] = useState(() => readPreviewValue('dorkar-profile-preview', initialProfile))
   const [savedProfile, setSavedProfile] = useState(() => readPreviewValue('dorkar-profile-preview', initialProfile))
   const [avatar, setAvatar] = useState('')
@@ -120,8 +123,8 @@ export default function ProfilePage({ editable = false }) {
         </div>
         <nav className="profile-nav" aria-label="Profile menu">
           <span className="profile-nav-label">ACCOUNT</span>
-          {navItems.map(([icon, label, href]) => <a className={icon===(editable?'settings':'profile')?'active':''} href={href} key={icon}><ProfileIcon name={icon}/><span>{label}</span>{icon===(editable?'settings':'profile')&&<b aria-hidden="true">›</b>}</a>)}
-          <span className="profile-nav-label profile-nav-label-secondary">PREFERENCES</span>
+          {visibleNavItems.map(([icon, label, href]) => <a className={icon===(editable?'settings':'profile')?'active':''} href={href} key={icon}><ProfileIcon name={icon}/><span>{label}</span>{icon===(editable?'settings':'profile')&&<b aria-hidden="true">›</b>}</a>)}
+          {!isAdmin&&<span className="profile-nav-label profile-nav-label-secondary">PREFERENCES</span>}
           <button className="profile-logout-link" type="button" onClick={()=>setLogoutOpen(true)}><ProfileIcon name="logout"/><span>Log Out</span></button>
         </nav>
       </aside>

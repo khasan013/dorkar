@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import dorkarLogo from '../assets/D-Logo-transparent.png'
-import { readAuthSession, signOut } from '../auth/session'
-import { getAdminDashboard, getAdminPartners, getAdminRequests, getAdminTickets } from '../services/adminApi'
-import './AdminDashboardPage.css'
+import dorkarLogo from '../../assets/D-Logo-transparent.png'
+import { readAuthSession, signOut } from '../../auth/session'
+import { getAdminDashboard, getAdminPartners, getAdminRequests, getAdminTickets } from '../../services/adminApi'
+import './DashboardPage.css'
 
 const serviceConfig = {
   RIDE: { label: 'Ride Sharing', short: 'Ride', color: '#2388f5', icon: 'car' },

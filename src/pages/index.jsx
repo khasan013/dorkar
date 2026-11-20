@@ -33,7 +33,21 @@ import TermsConditionsPage from './TermsConditionsPage'
 import PrivacyPolicyPage from './PrivacyPolicyPage'
 import HowItWorksPage from './HowItWorksPage'
 import ServicesPage from './ServicesPage'
-import AdminDashboardPage from './AdminDashboardPage'
+import AdminDashboardPage from './admin/DashboardPage'
+import AdminUsersPage from './admin/UsersPage'
+import AdminDriversPage from './admin/DriversPage'
+import AdminRideManagementPage from './admin/RideManagementPage'
+import AdminFoodManagementPage from './admin/FoodManagementPage'
+import AdminParcelManagementPage from './admin/ParcelManagementPage'
+import AdminBloodDonationPage from './admin/BloodDonationPage'
+import AdminOrdersPage from './admin/OrdersPage'
+import AdminPaymentsPage from './admin/PaymentsPage'
+import AdminPromotionsPage from './admin/PromotionsPage'
+import AdminSupportPage from './admin/SupportPage'
+import AdminReportsPage from './admin/ReportsPage'
+import AdminSettingsPage from './admin/SettingsPage'
+import AdminRolesPage from './admin/AdminRolesPage'
+import AdminSystemLogsPage from './admin/SystemLogsPage'
 import { DetailedPage } from './PageRenderer'
 import SiteFooter from './SiteFooter'
 import { useEffect } from 'react'
@@ -77,20 +91,20 @@ const routes = {
   '/dashboard': UserDashboardPage,
   '/admin': AdminDashboardPage,
   '/admin/dashboard': AdminDashboardPage,
-  '/admin/users': AdminDashboardPage,
-  '/admin/drivers': AdminDashboardPage,
-  '/admin/rides': AdminDashboardPage,
-  '/admin/food': AdminDashboardPage,
-  '/admin/parcels': AdminDashboardPage,
-  '/admin/blood': AdminDashboardPage,
-  '/admin/orders': AdminDashboardPage,
-  '/admin/payments': AdminDashboardPage,
-  '/admin/promotions': AdminDashboardPage,
-  '/admin/support': AdminDashboardPage,
-  '/admin/reports': AdminDashboardPage,
-  '/admin/settings': AdminDashboardPage,
-  '/admin/access': AdminDashboardPage,
-  '/admin/logs': AdminDashboardPage,
+  '/admin/users': AdminUsersPage,
+  '/admin/drivers': AdminDriversPage,
+  '/admin/rides': AdminRideManagementPage,
+  '/admin/food': AdminFoodManagementPage,
+  '/admin/parcels': AdminParcelManagementPage,
+  '/admin/blood': AdminBloodDonationPage,
+  '/admin/orders': AdminOrdersPage,
+  '/admin/payments': AdminPaymentsPage,
+  '/admin/promotions': AdminPromotionsPage,
+  '/admin/support': AdminSupportPage,
+  '/admin/reports': AdminReportsPage,
+  '/admin/settings': AdminSettingsPage,
+  '/admin/access': AdminRolesPage,
+  '/admin/logs': AdminSystemLogsPage,
   '/profile': ProfilePage,
   '/settings': SettingsPage,
   '/ride/booking': RideBookingPage,
