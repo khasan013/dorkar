@@ -10,12 +10,16 @@
   min-height: 150px;
   max-height: 300px;
   overflow: hidden;
+  isolation: isolate;
   border: 1px solid #f3dfe5;
   border-radius: 20px;
   background: linear-gradient(115deg, #fff1f4, #fff 48%, #ffe9ee);
   box-shadow: 0 12px 32px #1718270a;
 }
 
+.offers-carousel-slide,
+.offers-carousel-slide picture,
+.offers-carousel-slide img,
 .offers-carousel-frame > img,
 .offers-carousel-frame > picture,
 .offers-carousel-image-link,
@@ -25,16 +29,39 @@
   height: 100%;
 }
 
+.offers-carousel-slide > img,
+.offers-carousel-slide > picture,
+.offers-carousel-slide > picture img,
+.offers-carousel-slide .offers-carousel-image-link img,
 .offers-carousel-frame > img,
 .offers-carousel-frame > picture img,
 .offers-carousel-image-link img {
   object-fit: contain;
-  animation: offers-banner-enter .32s ease both;
 }
 
-@keyframes offers-banner-enter {
-  from { opacity: .35; }
-  to { opacity: 1; }
+.offers-carousel-slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.offers-carousel-slide[aria-hidden="true"] { pointer-events: none; }
+.offers-carousel-slide.is-entering-next { animation: offers-slide-in-right .46s cubic-bezier(.2,.75,.25,1) both; }
+.offers-carousel-slide.is-leaving-next { animation: offers-slide-out-left .46s cubic-bezier(.2,.75,.25,1) both; }
+.offers-carousel-slide.is-entering-previous { animation: offers-slide-in-left .46s cubic-bezier(.2,.75,.25,1) both; }
+.offers-carousel-slide.is-leaving-previous { animation: offers-slide-out-right .46s cubic-bezier(.2,.75,.25,1) both; }
+
+@keyframes offers-slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes offers-slide-out-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes offers-slide-in-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes offers-slide-out-right { from { transform: translateX(0); } to { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .offers-carousel-slide.is-entering-next,
+  .offers-carousel-slide.is-leaving-next,
+  .offers-carousel-slide.is-entering-previous,
+  .offers-carousel-slide.is-leaving-previous { animation-duration: .01ms; }
 }
 
 .offers-carousel-control {
@@ -94,8 +121,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .offers-carousel-frame > img,
-  .offers-carousel-image-link img { animation: none; }
   .offers-carousel-control,
   .offers-carousel-indicators button { transition: none; }
 }

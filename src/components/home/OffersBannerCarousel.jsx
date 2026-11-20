@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getActiveBanners } from '../../services/bannerApi'
 import './OffersBannerCarousel.css'
 
@@ -42,6 +42,8 @@ export default function OffersBannerCarousel() {
   const [index, setIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
   const [isHidden, setIsHidden] = useState(() => document.visibilityState === 'hidden')
+  const [transition, setTransition] = useState(null)
+  const transitionTimeout = useRef(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -52,6 +54,8 @@ export default function OffersBannerCarousel() {
       })
     return () => controller.abort()
   }, [])
+
+  useEffect(() => () => window.clearTimeout(transitionTimeout.current), [])
 
   const current = banners[index]
   const destination = useMemo(() => current ? bannerDestination(current) : null, [current])
@@ -67,7 +71,7 @@ export default function OffersBannerCarousel() {
 
   useEffect(() => {
     if (!hasMultiple || isHovering || isHidden) return undefined
-    const timer = window.setTimeout(() => setIndex(value => (value + 1) % banners.length), duration)
+    const timer = window.setTimeout(() => navigate((index + 1) % banners.length, 'next'), duration)
     return () => window.clearTimeout(timer)
   }, [banners.length, duration, hasMultiple, index, isHidden, isHovering])
 
@@ -85,7 +89,28 @@ export default function OffersBannerCarousel() {
   const bannerImage = current.mobileImageUrl
     ? <picture key={current.id ?? current.imageUrl}><source media="(max-width: 720px)" srcSet={current.mobileImageUrl}/><img src={current.imageUrl} alt={current.altText || current.title || 'Dorkar offer'} /></picture>
     : <img key={current.id ?? current.imageUrl} src={current.imageUrl} alt={current.altText || current.title || 'Dorkar offer'} />
-  const move = offset => setIndex(value => (value + offset + banners.length) % banners.length)
+  const outgoing = transition ? banners[transition.from] : null
+  const renderSlide = (banner, isOutgoing = false) => {
+    const image = banner.mobileImageUrl
+      ? <picture><source media="(max-width: 720px)" srcSet={banner.mobileImageUrl}/><img src={banner.imageUrl} alt={isOutgoing ? '' : banner.altText || banner.title || 'Dorkar offer'} /></picture>
+      : <img src={banner.imageUrl} alt={isOutgoing ? '' : banner.altText || banner.title || 'Dorkar offer'} />
+    const slideDestination = isOutgoing ? null : bannerDestination(banner)
+    return <div
+      key={`${banner.id ?? banner.imageUrl}-${isOutgoing ? 'outgoing' : 'incoming'}-${transition?.key ?? 'still'}`}
+      className={`offers-carousel-slide${transition ? ` ${isOutgoing ? `is-leaving-${transition.direction}` : `is-entering-${transition.direction}`}` : ''}`}
+      aria-hidden={isOutgoing || undefined}
+    >{slideDestination
+      ? <a className="offers-carousel-image-link" href={slideDestination.href} target={slideDestination.external ? '_blank' : undefined} rel={slideDestination.external ? 'noopener noreferrer' : undefined} aria-label={banner.title || 'View offer'}>{image}</a>
+      : image}</div>
+  }
+  const navigate = (nextIndex, direction) => {
+    if (nextIndex === index) return
+    window.clearTimeout(transitionTimeout.current)
+    setTransition({ from: index, to: nextIndex, direction, key: Date.now() })
+    setIndex(nextIndex)
+    transitionTimeout.current = window.setTimeout(() => setTransition(null), 480)
+  }
+  const move = offset => navigate((index + offset + banners.length) % banners.length, offset > 0 ? 'next' : 'previous')
 
   return <section
     className="offers-carousel section-shell"
@@ -94,9 +119,10 @@ export default function OffersBannerCarousel() {
     onMouseLeave={() => setIsHovering(false)}
   >
     <div className="offers-carousel-frame" aria-live="off">
-      {destination
+      {transition && outgoing && renderSlide(outgoing, true)}
+      {transition ? renderSlide(current) : <div className="offers-carousel-slide">{destination
         ? <a className="offers-carousel-image-link" href={destination.href} target={destination.external ? '_blank' : undefined} rel={destination.external ? 'noopener noreferrer' : undefined} aria-label={current.title || 'View offer'}>{bannerImage}</a>
-        : bannerImage}
+        : bannerImage}</div>}
       {hasMultiple && <>
         <button className="offers-carousel-control previous" type="button" onClick={() => move(-1)} aria-label="Previous offer"><ArrowIcon direction="previous"/></button>
         <button className="offers-carousel-control next" type="button" onClick={() => move(1)} aria-label="Next offer"><ArrowIcon direction="next"/></button>
@@ -107,7 +133,7 @@ export default function OffersBannerCarousel() {
         key={banner.id ?? `${banner.imageUrl}-${slideIndex}`}
         className={slideIndex === index ? 'is-active' : ''}
         type="button"
-        onClick={() => setIndex(slideIndex)}
+        onClick={() => navigate(slideIndex, slideIndex > index ? 'next' : 'previous')}
         aria-label={`Show offer ${slideIndex + 1}`}
         aria-current={slideIndex === index ? 'true' : undefined}
       />)}
