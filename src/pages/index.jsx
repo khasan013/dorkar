@@ -33,6 +33,7 @@ import TermsConditionsPage from './TermsConditionsPage'
 import PrivacyPolicyPage from './PrivacyPolicyPage'
 import HowItWorksPage from './HowItWorksPage'
 import ServicesPage from './ServicesPage'
+import AdminDashboardPage from './AdminDashboardPage'
 import { DetailedPage } from './PageRenderer'
 import SiteFooter from './SiteFooter'
 import { useEffect } from 'react'
@@ -47,6 +48,22 @@ const protectedPaths = new Set([
   '/ride/history',
   '/orders/history',
   '/activity',
+  '/admin',
+  '/admin/dashboard',
+  '/admin/users',
+  '/admin/drivers',
+  '/admin/rides',
+  '/admin/food',
+  '/admin/parcels',
+  '/admin/blood',
+  '/admin/orders',
+  '/admin/payments',
+  '/admin/promotions',
+  '/admin/support',
+  '/admin/reports',
+  '/admin/settings',
+  '/admin/access',
+  '/admin/logs',
 ])
 
 const routes = {
@@ -58,6 +75,22 @@ const routes = {
   '/login': SignInPage,
   '/register': SignUpPage,
   '/dashboard': UserDashboardPage,
+  '/admin': AdminDashboardPage,
+  '/admin/dashboard': AdminDashboardPage,
+  '/admin/users': AdminDashboardPage,
+  '/admin/drivers': AdminDashboardPage,
+  '/admin/rides': AdminDashboardPage,
+  '/admin/food': AdminDashboardPage,
+  '/admin/parcels': AdminDashboardPage,
+  '/admin/blood': AdminDashboardPage,
+  '/admin/orders': AdminDashboardPage,
+  '/admin/payments': AdminDashboardPage,
+  '/admin/promotions': AdminDashboardPage,
+  '/admin/support': AdminDashboardPage,
+  '/admin/reports': AdminDashboardPage,
+  '/admin/settings': AdminDashboardPage,
+  '/admin/access': AdminDashboardPage,
+  '/admin/logs': AdminDashboardPage,
   '/profile': ProfilePage,
   '/settings': SettingsPage,
   '/ride/booking': RideBookingPage,
@@ -89,15 +122,20 @@ const routes = {
 export default function Pages() {
   const requestedPath = window.location.pathname.replace(/\/$/, '') || '/'
   const path = requestedPath === '/signin' ? '/login' : requestedPath === '/signup' ? '/register' : requestedPath
-  const isProtected = protectedPaths.has(path) && !readAuthSession()
+  const session = readAuthSession()
+  const isProtected = protectedPaths.has(path) && !session
+  const isAdminPath = path === '/admin' || path.startsWith('/admin/')
+  const hasAdminRole = ['ADMIN', 'SUPER_ADMIN'].includes(String(session?.user?.role || '').toUpperCase())
   useEffect(() => {
     if (isProtected) redirectToLogin()
   }, [isProtected])
 
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
+  if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (path === '/') return <HomePage />
   const Page = routes[path]
   if (!Page) return <HomePage />
+  if (isAdminPath) return <Page />
   if (path === '/login' || path === '/register' || path === '/dashboard') return <><Page /><SiteFooter /></>
   return <DetailedPage><Page /></DetailedPage>
 }
