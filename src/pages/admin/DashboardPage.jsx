@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dorkarLogo from '../../assets/D-Logo-transparent.png'
 import { readAuthSession, signOut } from '../../auth/session'
 import { adminRoleLabel, canAccessAdminPath } from '../../auth/adminRoles'
@@ -82,6 +82,8 @@ function AdminDashboardPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
+  const notificationMenuRef = useRef(null)
+  const profileMenuRef = useRef(null)
   const [search, setSearch] = useState('')
   const [dashboard, setDashboard] = useState(null)
   const [requests, setRequests] = useState([])
@@ -130,6 +132,25 @@ function AdminDashboardPage() {
       setRefreshing(false)
     }
   }
+
+  useEffect(() => {
+    const closeMenusOnOutsideClick = (event) => {
+      if (!notificationMenuRef.current?.contains(event.target)) setNotificationOpen(false)
+      if (!profileMenuRef.current?.contains(event.target)) setProfileOpen(false)
+    }
+    const closeMenusOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setNotificationOpen(false)
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', closeMenusOnOutsideClick)
+    document.addEventListener('keydown', closeMenusOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeMenusOnOutsideClick)
+      document.removeEventListener('keydown', closeMenusOnEscape)
+    }
+  }, [])
 
   useEffect(() => {
     loadData()
@@ -188,12 +209,12 @@ function AdminDashboardPage() {
         <div className="admin-top-actions">
           <label className="admin-search"><Icon name="search" size={18}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search requests..." aria-label="Search recent service requests"/>{search && <button type="button" onClick={() => setSearch('')} aria-label="Clear search"><Icon name="close" size={15}/></button>}</label>
           {searchQuery && <div className="admin-search-results" role="status">{searchMatches.length ? `${searchMatches.length} recent request${searchMatches.length === 1 ? '' : 's'} match` : 'Search recent requests by reference, service, or status.'}</div>}
-          <div className="admin-popover-wrap">
-            <button className="admin-icon-button has-dot" type="button" aria-label="Notifications" onClick={() => setNotificationOpen(!notificationOpen)}><Icon name="bell"/></button>
+          <div className="admin-popover-wrap" ref={notificationMenuRef}>
+            <button className="admin-icon-button has-dot" type="button" aria-label="Notifications" aria-expanded={notificationOpen} onClick={() => { setNotificationOpen(!notificationOpen); setProfileOpen(false) }}><Icon name="bell"/></button>
             {notificationOpen && <div className="admin-popover"><b>Admin notifications</b><p>{pendingPartners + openTickets ? `${formatCount(pendingPartners + openTickets)} items need attention.` : 'No urgent items are waiting.'}</p><a href="#approvals" onClick={() => setNotificationOpen(false)}>Review dashboard</a></div>}
           </div>
-          <div className="admin-popover-wrap">
-            <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{adminProfileImage?<img src={adminProfileImage} alt=""/>:initials}</span><span className="admin-profile-copy"><b>{adminName}</b><small>{adminRoleLabel(session?.user?.role)}</small></span></button>
+          <div className="admin-popover-wrap" ref={profileMenuRef}>
+            <button className="admin-profile-button" type="button" onClick={() => { setProfileOpen(!profileOpen); setNotificationOpen(false) }} aria-expanded={profileOpen}><span className="admin-avatar">{adminProfileImage?<img src={adminProfileImage} alt=""/>:initials}</span><span className="admin-profile-copy"><b>{adminName}</b><small>{adminRoleLabel(session?.user?.role)}</small></span></button>
             {profileOpen && <div className="admin-popover admin-account-popover"><b>{adminName}</b><small>{session?.user?.email || session?.user?.phone || ''}</small><a href="/profile">My profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
           </div>
           <button className="admin-mobile-menu" type="button" aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'} onClick={() => setMobileNavOpen(!mobileNavOpen)}><Icon name={mobileNavOpen ? 'close' : 'menu'}/></button>
