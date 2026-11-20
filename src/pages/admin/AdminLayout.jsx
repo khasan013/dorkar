@@ -54,6 +54,7 @@ export default function AdminLayout({ title, description, children }) {
   const session = readAuthSession()
   const name = session?.user?.name || 'Administrator'
   const role = session?.user?.role || 'ADMIN'
+  const profileImage = session?.user?.avatarUrl || session?.user?.profileImageUrl
   const initials = name.split(/\s+/).map((word) => word[0]).join('').slice(0, 2).toUpperCase()
   const currentSection = window.location.pathname.split('/')[2] || 'dashboard'
 
@@ -65,7 +66,7 @@ export default function AdminLayout({ title, description, children }) {
         <a className="admin-layout-search" href="/admin/users"><AdminIcon name="search" size={17}/><span>Search users, orders, rides...</span></a>
         <button className="admin-icon-button has-dot" type="button" aria-label="Notifications" onClick={() => window.location.assign('/admin/support')}><AdminIcon name="bell"/></button>
         <div className="admin-popover-wrap">
-          <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{initials}</span><span className="admin-profile-copy"><b>{name}</b><small>{adminRoleLabel(role)}</small></span><span className="admin-chevron"><AdminIcon name="chevron" size={14}/></span></button>
+          <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{profileImage?<img src={profileImage} alt=""/>:initials}</span><span className="admin-profile-copy"><b>{name}</b><small>{adminRoleLabel(role)}</small></span><span className="admin-chevron"><AdminIcon name="chevron" size={14}/></span></button>
           {profileOpen && <div className="admin-popover admin-account-popover"><b>{name}</b><a href="/profile">My profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
         </div>
         <button className="admin-mobile-menu" type="button" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} onClick={() => setMobileOpen(!mobileOpen)}><AdminIcon name={mobileOpen ? 'close' : 'menu'}/></button>

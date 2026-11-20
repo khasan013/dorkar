@@ -6,6 +6,7 @@ import heroScenery from '../assets/Hero-bg-illlustration.png'
 import './ProfilePage.css'
 
 const sessionProfile = (user = {}) => ({ name: user.name || '', phone: user.phone || '', email: user.email || '', birthday: user.dateOfBirth || '', area: user.preferredArea || '' })
+const profilePhotoUrl = (user = {}) => user.avatarUrl || user.profileImageUrl || ''
 const locationFromApi = (location) => ({ ...location, label: ({ HOME: 'Home', WORK: 'Work', OTHER: 'Other' })[String(location.label || '').toUpperCase()] || location.label || 'Other', isDefault: location.isDefault ?? location.default ?? false })
 const areas = ['Gulshan', 'Banani', 'Dhanmondi', 'Mirpur', 'Uttara', 'Mohammadpur', 'Bashundhara', 'Badda', 'Motijheel', 'Other Dhaka Areas']
 
@@ -46,7 +47,7 @@ export default function ProfilePage({ editable = false }) {
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileUnavailable, setProfileUnavailable] = useState(false)
   const [profileSaving, setProfileSaving] = useState(false)
-  const [avatar, setAvatar] = useState(() => session?.user?.avatarUrl || '')
+  const [avatar, setAvatar] = useState(() => profilePhotoUrl(session?.user))
   const [photoUploading, setPhotoUploading] = useState(false)
   const [photoNotice, setPhotoNotice] = useState('')
   const [notice, setNotice] = useState('')
@@ -73,9 +74,10 @@ export default function ProfilePage({ editable = false }) {
       const current = sessionProfile(user)
       setProfile(current)
       setSavedProfile(current)
-      setAvatar(user?.avatarUrl || '')
+      const photoUrl = profilePhotoUrl(user)
+      setAvatar(photoUrl)
       const activeSession = readAuthSession()
-      if (activeSession) saveAuthSession({ ...activeSession, user: { ...activeSession.user, ...user } })
+      if (activeSession) saveAuthSession({ ...activeSession, user: { ...activeSession.user, ...user, avatarUrl: photoUrl } })
       setProfileUnavailable(false)
     }).catch(error => {
       if (!controller.signal.aborted) {
@@ -161,11 +163,11 @@ export default function ProfilePage({ editable = false }) {
     setPhotoNotice('Uploading your profile picture…')
     try {
       const updatedUser = await uploadMyProfilePhoto(file, session.accessToken)
-      const savedUrl = updatedUser?.avatarUrl || ''
+      const savedUrl = profilePhotoUrl(updatedUser)
       setAvatar(savedUrl)
       const currentSession = readAuthSession()
       if (currentSession) {
-        saveAuthSession({ ...currentSession, user: { ...currentSession.user, ...updatedUser } })
+        saveAuthSession({ ...currentSession, user: { ...currentSession.user, ...updatedUser, avatarUrl: savedUrl } })
       }
       setPhotoNotice('Your profile picture has been saved.')
     } catch (error) {

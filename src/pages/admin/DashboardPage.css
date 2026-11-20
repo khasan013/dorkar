@@ -22,6 +22,7 @@
 .admin-icon-button.has-dot:after{position:absolute;content:'';width:7px;height:7px;border:1.5px solid white;border-radius:50%;background:var(--admin-red);right:4px;top:4px}
 .admin-profile-button{display:flex;align-items:center;gap:10px;padding:0;border:0;background:none;text-align:left;cursor:pointer;color:var(--admin-ink)}
 .admin-avatar{width:41px;height:41px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#f6e6f3,#fff1f4);color:#29283d;font-size:12px;font-weight:700}
+.admin-avatar img{width:100%;height:100%;border-radius:inherit;object-fit:cover}
 .admin-profile-copy{display:flex;flex-direction:column;line-height:1.4;white-space:nowrap}.admin-profile-copy b{font-size:12px}.admin-profile-copy small{color:var(--admin-muted);font-size:11px}
 .admin-chevron{font-size:18px;color:#343748;margin-left:2px;transform:translateY(-2px)}
 .admin-popover-wrap{position:relative}

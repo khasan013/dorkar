@@ -61,7 +61,7 @@ function DashboardNavbar() {
           {menu === 'notifications' && <div className="nav-popover notification-popover"><b>Notifications</b><a href="/notifications">Your driver is on the way <small>Ride · 10 min ago</small></a><a href="/notifications">Kacchi Bhai received your order <small>Food · 1 hour ago</small></a><a className="popover-link" href="/notifications">View all notifications</a></div>}
         </div>
         <div className="nav-menu-wrap profile-menu-wrap">
-          <button className="profile-trigger" onClick={() => setMenu(menu === 'profile' ? '' : 'profile')} aria-expanded={menu === 'profile'}><span className="profile-avatar">{user?.avatarUrl ? <img src={user.avatarUrl} alt=""/> : initials}</span><span className="profile-name">{userName}</span><Icon name="chevron" size={17}/></button>
+          <button className="profile-trigger" onClick={() => setMenu(menu === 'profile' ? '' : 'profile')} aria-expanded={menu === 'profile'}><span className="profile-avatar">{(user?.avatarUrl||user?.profileImageUrl) ? <img src={user.avatarUrl||user.profileImageUrl} alt=""/> : initials}</span><span className="profile-name">{userName}</span><Icon name="chevron" size={17}/></button>
           {menu === 'profile' && <div className="nav-popover profile-popover"><b>{userName}</b><small>{user?.email || user?.phone}</small><a href="/profile">My Profile</a><a href="/settings">Account Settings</a><a href="/login" onClick={(event) => { event.preventDefault(); signOut() }}>Log out</a></div>}
         </div>
       </div>
