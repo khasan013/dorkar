@@ -193,8 +193,8 @@ function AdminDashboardPage() {
             {notificationOpen && <div className="admin-popover"><b>Admin notifications</b><p>{pendingPartners + openTickets ? `${formatCount(pendingPartners + openTickets)} items need attention.` : 'No urgent items are waiting.'}</p><a href="#approvals" onClick={() => setNotificationOpen(false)}>Review dashboard</a></div>}
           </div>
           <div className="admin-popover-wrap">
-            <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{adminProfileImage?<img src={adminProfileImage} alt=""/>:initials}</span><span className="admin-profile-copy"><b>{adminName}</b><small>{adminRoleLabel(session?.user?.role)}</small></span><span className="admin-chevron">⌄</span></button>
-            {profileOpen && <div className="admin-popover admin-account-popover"><b>{adminName}</b><small>{session?.user?.email || session?.user?.phone || ''}</small><button type="button" onClick={signOut}>Sign out</button></div>}
+            <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{adminProfileImage?<img src={adminProfileImage} alt=""/>:initials}</span><span className="admin-profile-copy"><b>{adminName}</b><small>{adminRoleLabel(session?.user?.role)}</small></span></button>
+            {profileOpen && <div className="admin-popover admin-account-popover"><b>{adminName}</b><small>{session?.user?.email || session?.user?.phone || ''}</small><a href="/profile">My profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
           </div>
           <button className="admin-mobile-menu" type="button" aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'} onClick={() => setMobileNavOpen(!mobileNavOpen)}><Icon name={mobileNavOpen ? 'close' : 'menu'}/></button>
         </div>
