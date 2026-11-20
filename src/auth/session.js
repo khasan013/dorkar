@@ -22,15 +22,24 @@ export function readAuthSession() {
 
 export function saveAuthSession(session) {
   localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session))
+  window.dispatchEvent(new Event('dorkar-auth-change'))
 }
 
 export function clearAuthSession() {
   localStorage.removeItem(AUTH_SESSION_KEY)
+  window.dispatchEvent(new Event('dorkar-auth-change'))
 }
 
-export function getPostLoginPath() {
+export function getPostLoginPath(user) {
   const requestedPath = new URLSearchParams(window.location.search).get('returnTo')
-  if (requestedPath?.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.includes('\\')) {
+  const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(String(user?.role || '').toUpperCase())
+  const safeRequestedPath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.includes('\\')
+
+  if (isAdmin) {
+    return safeRequestedPath && (requestedPath === '/admin' || requestedPath.startsWith('/admin/')) ? requestedPath : '/admin'
+  }
+
+  if (safeRequestedPath) {
     return requestedPath
   }
   return '/dashboard'

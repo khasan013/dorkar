@@ -126,11 +126,16 @@ export default function Pages() {
   const isProtected = protectedPaths.has(path) && !session
   const isAdminPath = path === '/admin' || path.startsWith('/admin/')
   const hasAdminRole = ['ADMIN', 'SUPER_ADMIN'].includes(String(session?.user?.role || '').toUpperCase())
+  const adminOnUserDashboard = path === '/dashboard' && hasAdminRole
   useEffect(() => {
     if (isProtected) redirectToLogin()
   }, [isProtected])
+  useEffect(() => {
+    if (adminOnUserDashboard) window.location.replace('/admin')
+  }, [adminOnUserDashboard])
 
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
+  if (adminOnUserDashboard) return <main className="auth-redirect" role="status">Opening your admin dashboard…</main>
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (path === '/') return <HomePage />
   const Page = routes[path]

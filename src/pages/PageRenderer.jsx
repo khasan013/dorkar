@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import dorkarLogo from '../assets/D-Logo.png'
 import dorkarLogoMark from '../assets/D-Logo-transparent.png'
 import '../App.css'
@@ -13,6 +13,7 @@ import bloodArtwork from '../assets/blood-donation.png'
 import downloadPhones from '../assets/BangladeshNavigationandFoodApps-transparent.png'
 import googlePlayIcon from '../assets/Google-Play-Icon.png'
 import AuthForm from '../auth/AuthForm'
+import { readAuthSession, signOut } from '../auth/session'
 const pages = [  ['Home', '/', 'Home'], ['Ride Sharing', '/ride', 'Services'], ['Food Delivery', '/food', 'Services'], ['Parcel Delivery', '/parcel', 'Services'], ['Blood Donation', '/blood', 'Services'],  ['Login', '/login', 'Account'], ['Register', '/register', 'Account'], ['User Dashboard', '/dashboard', 'Account'], ['Profile', '/profile', 'Account'], ['Ride Booking', '/ride/booking', 'Ride'], ['Ride Tracking', '/ride/tracking', 'Ride'],  ['Food Restaurants', '/food/restaurants', 'Food'], ['Food Details', '/food/details', 'Food'], ['Cart', '/cart', 'Food'], ['Checkout', '/checkout', 'Food'], ['Order Tracking', '/orders/tracking', 'Food'], ['Parcel Booking', '/parcel/booking', 'Parcel'], ['Parcel Tracking', '/parcel/tracking', 'Parcel'],  ['Blood Donor Search', '/blood/donors', 'Blood'], ['Blood Donation Request', '/blood/request', 'Blood'], ['Donor Profile', '/blood/donor-profile', 'Blood'], ['Payment', '/payment', 'Account'], ['Notifications', '/notifications', 'Account'], ['Ride History', '/ride/history', 'Account'], ['Order History', '/orders/history', 'Account'], ['Help & Support', '/support', 'Info'], ['About Us', '/about', 'Info'], ['Contact Us', '/contact', 'Info'], ['Partner Registration', '/partner', 'Info'], ['Terms & Conditions', '/terms', 'Info'], ['Privacy Policy', '/privacy', 'Info'],]
 const services = [  { title:'Ride Sharing', desc:'Book a ride quickly, safely and at a fair price.', icon:'ride', art:'car', tint:'pink', href:'/ride' },  { title:'Food Delivery', desc:'Your favorite meals from top restaurants.', icon:'food', art:'burger', tint:'orange', href:'/food' },  { title:'Parcel Delivery', desc:'Send and receive parcels across the city easily.', icon:'parcel', art:'parcel', tint:'blue', href:'/parcel' },  { title:'Blood Donor', desc:'Find blood donors or register as a donor to save lives.', icon:'blood', art:'blood', tint:'pink', href:'/blood' },]
 const serviceArtwork = { car: rideArtwork, burger: foodArtwork, parcel: parcelArtwork, blood: bloodArtwork }
@@ -23,19 +24,34 @@ function AuthBrand() { return <a href="/" className="auth-brand" aria-label="Dor
 function StoreBadges(){return <div className="store-badges"><a href="#download" className="store-badge google-play-badge" aria-label="Get Dorkar on Google Play"><img className="play-store-logo" src={googlePlayIcon} alt=""/><span><small>GET IT ON</small><b>Google Play</b></span></a></div>}
 function Header(){
   const [open,setOpen]=useState(false)
+  const [profileOpen,setProfileOpen]=useState(false)
+  const [session,setSession]=useState(()=>readAuthSession())
+  useEffect(()=>{
+    const syncSession=()=>setSession(readAuthSession())
+    window.addEventListener('storage',syncSession)
+    window.addEventListener('dorkar-auth-change',syncSession)
+    return ()=>{
+      window.removeEventListener('storage',syncSession)
+      window.removeEventListener('dorkar-auth-change',syncSession)
+    }
+  },[])
   const pathname=window.location.pathname.replace(/\/+$/,'')||'/'
   const isHome=pathname==='/'
   const isServices=pathname==='/services'||['/ride','/food','/parcel','/blood'].some(route=>pathname===route||pathname.startsWith(`${route}/`))
   const isHowItWorks=pathname==='/how-it-works'
   const isAbout=pathname==='/about'
   const isContact=pathname==='/contact'
+  const adminUser=['ADMIN','SUPER_ADMIN'].includes(String(session?.user?.role||'').toUpperCase())
+  const profilePath=adminUser?'/admin':'/profile'
+  const profileName=session?.user?.name||'Your account'
   return <header className="header"><div className="nav-wrap"><Brand/><nav className={open?'nav open':'nav'} aria-label="Main navigation">
     <a className={isHome?'nav-active':''} aria-current={isHome?'page':undefined} href="/">Home</a>
     <a className={`nav-service-trigger nav-service-link ${isServices?'nav-active':''}`} aria-current={isServices?'page':undefined} href="/services" onClick={()=>setOpen(false)}>Services</a>
     <a className={isHowItWorks?'nav-active':''} aria-current={isHowItWorks?'page':undefined} href="/how-it-works" onClick={()=>setOpen(false)}>How It Works</a>
     <a className={isAbout?'nav-active':''} aria-current={isAbout?'page':undefined} href="/about" onClick={()=>setOpen(false)}>About</a>
     <a className={isContact?'nav-active':''} aria-current={isContact?'page':undefined} href="/contact" onClick={()=>setOpen(false)}>Contact</a>
-  </nav><div className="nav-actions"><a className="button outline" href="/partner">Partner with Us</a><a className="button primary" href={isHome?'#download':'/#download'}>Get the App</a></div><button className="menu-toggle" onClick={()=>setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open?'×':'☰'}</button></div></header>
+    {!session&&<a className="nav-register-link" href="/register" onClick={()=>setOpen(false)}>Create account</a>}
+  </nav><div className="nav-actions"><a className="button outline partner-cta" href="/partner">Partner with Us</a>{session?<div className="header-profile-wrap"><button className="header-profile-button" type="button" aria-label={`Open ${profileName} profile menu`} aria-expanded={profileOpen} onClick={()=>setProfileOpen(!profileOpen)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg></button>{profileOpen&&<div className="header-profile-menu"><b>{profileName}</b><small>{session.user?.email||session.user?.phone||'Dorkar account'}</small><a href="/profile">My profile</a><a href={profilePath}>{adminUser?'Admin dashboard':'User dashboard'}</a><button type="button" onClick={signOut}>Sign out</button></div>}</div>:<><a className="button outline header-signin" href="/login">Sign in</a><a className="button outline header-register" href="/register">Create account</a></>}<a className="button primary app-cta" href={isHome?'#download':'/#download'}>Get the App</a></div><button className="menu-toggle" onClick={()=>setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open?'×':'☰'}</button></div></header>
 }
 function PhoneMock(){return <div className="phone-wrap"><img className="hero-scenery" src={heroScenery} alt=""/><img className="hero-device" src={heroPhone} alt="Dorkar app home screen on a smartphone"/></div>}
 function ServiceIcon({type}){const paths={ride:<><path d="m4 13 2-5h12l2 5v5h-2v-2H6v2H4Zm3-5-1 4h12l-1-4Zm0 7h2m7 0h2"/><circle cx="7" cy="15" r="1"/><circle cx="17" cy="15" r="1"/></>,food:<><path d="M5 3v7m3-7v7m-3-3h3M7 10v11m9-18v18m0-18c3 4 3 8 0 10"/></>,parcel:<><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Zm-8 4.5 8 5 8-5M12 12.5V21m-4-15 8 5"/></>,blood:<><path d="M12 3s-6 7-6 12a6 6 0 0 0 12 0c0-5-6-12-6-12Z"/><path d="M12 11v7m-3.5-3.5h7"/></>};return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[type]}</svg>}

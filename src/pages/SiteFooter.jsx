@@ -17,13 +17,6 @@ const groups = [
       ['Help & support', '/support'],
     ],
   },
-  {
-    title: 'Your account',
-    links: [
-      ['Sign in', '/login'],
-      ['Create an account', '/register'],
-    ],
-  },
 ]
 
 function Brand() {

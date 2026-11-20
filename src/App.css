@@ -449,3 +449,21 @@ body:has(.auth-layout){background:radial-gradient(ellipse at 7% 15%,#fff0f3,tran
 .auth-brand{display:inline-flex;align-items:center;gap:9px;color:#10111b;font:800 26px/1 Manrope,sans-serif;letter-spacing:-1.1px;white-space:nowrap;position:relative;z-index:2}.auth-brand-symbol{display:block;width:44px;height:44px;flex:0 0 44px;object-fit:contain}
 
 .auth-api-form .auth-error{margin:12px 0 0;padding:10px 12px;border:1px solid #ffd4dc;border-radius:10px;background:#fff5f6;color:#b81732;font-size:12px;font-weight:600;line-height:1.5}
+
+/* Header account state */
+.nav-register-link{display:none}
+.header-profile-wrap{position:relative;display:flex;align-items:center}
+.header-profile-button{width:42px;height:42px;display:grid;place-items:center;border:1px solid #f1dfe6;border-radius:50%;background:#fff;color:#202333;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.header-profile-button svg{width:21px;height:21px}
+.header-profile-button:hover{border-color:#f3a3b1;background:#fff2f5;color:var(--red)}
+.header-profile-menu{position:absolute;z-index:20;top:calc(100% + 12px);right:0;width:230px;padding:14px;border:1px solid #f0e5e9;border-radius:15px;background:#fff;box-shadow:0 15px 40px #1e182215;display:flex;flex-direction:column;gap:7px}
+.header-profile-menu b{font-size:13px}.header-profile-menu small{margin-bottom:4px;color:#73798b;font-size:10px;overflow-wrap:anywhere}.header-profile-menu a,.header-profile-menu button{padding:9px 10px;border:0;border-radius:9px;background:#fff;color:#262a3a;text-align:left;font:600 11px 'DM Sans',sans-serif;cursor:pointer}.header-profile-menu a:hover,.header-profile-menu button:hover{background:#fff0f3;color:var(--red)}
+.footer-signout{width:max-content;padding:0;border:0;background:none;color:#c92a42;font:500 12px 'DM Sans',sans-serif;text-align:left;cursor:pointer}
+@media(max-width:1439px){.nav-actions .header-register{display:none}.nav-wrap{gap:18px}.nav{gap:3px}.nav a{padding-inline:13px}}
+@media(max-width:1200px){.nav-actions .partner-cta{display:none}.nav-wrap{gap:12px}.nav a{padding-inline:11px;font-size:13px}.nav-actions{gap:8px}}
+@media(max-width:960px){.nav-actions .header-signin{display:inline-flex;min-height:38px;padding:0 14px;font-size:12px}.nav-actions .header-register{display:none}.nav-register-link{display:block;margin-top:5px;border-top:1px solid #f3e7eb!important;color:var(--red)!important;font-weight:700!important}.header-profile-button{width:38px;height:38px}.nav-wrap{position:relative}.nav{z-index:9}}
+@media(max-width:540px){.nav-actions{gap:6px}.nav-actions .header-signin{min-height:36px;padding:0 11px;font-size:11px}.header-profile-button{width:36px;height:36px}.header-profile-button svg{width:19px;height:19px}.header-profile-menu{right:-46px}}
+
+/* Footer layout after removing the account column */
+.footer-main{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr)}
+@media(max-width:1050px){.footer-main{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:25px}.footer-intro,.footer-contact{grid-column:1/-1}.footer-contact{border-left:0;padding-left:0}}

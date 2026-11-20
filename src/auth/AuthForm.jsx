@@ -78,7 +78,7 @@ export default function AuthForm({ path }) {
       }
 
       saveAuthSession(auth)
-      window.location.replace(getPostLoginPath())
+      window.location.replace(getPostLoginPath(auth.user))
     } catch (requestError) {
       setError(requestError instanceof TypeError
         ? 'Could not connect to Dorkar. Make sure the backend is running, then try again.'
