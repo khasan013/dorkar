@@ -1,3 +1,5 @@
+import { isAdminRole } from './adminRoles'
+
 const AUTH_SESSION_KEY = 'dorkar-auth-session'
 
 export function readAuthSession() {
@@ -32,7 +34,7 @@ export function clearAuthSession() {
 
 export function getPostLoginPath(user) {
   const requestedPath = new URLSearchParams(window.location.search).get('returnTo')
-  const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(String(user?.role || '').toUpperCase())
+  const isAdmin = isAdminRole(user?.role)
   const safeRequestedPath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.includes('\\')
 
   if (isAdmin) {

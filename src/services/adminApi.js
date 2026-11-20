@@ -37,6 +37,10 @@ export async function updateAdminUserStatus(id, enabled, accessToken) {
   return adminMutation(`/users/${encodeURIComponent(id)}/status?enabled=${enabled}`, accessToken, 'PATCH')
 }
 
+export async function updateAdminUserRole(id, role, accessToken) {
+  return adminMutation(`/users/${encodeURIComponent(id)}/role?role=${encodeURIComponent(role)}`, accessToken, 'PATCH')
+}
+
 export async function updateAdminRequestStatus(id, status, accessToken) {
   return adminMutation(`/requests/${encodeURIComponent(id)}/status?status=${encodeURIComponent(status)}`, accessToken, 'PATCH')
 }
@@ -70,6 +74,37 @@ export async function updateAdminPartnerStatus(id, status, accessToken) {
 
 export async function getAdminTickets(accessToken, signal) {
   return adminRequest('/support/tickets', accessToken, signal)
+}
+
+function toQuery(params = {}) {
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') query.set(key, String(value))
+  })
+  return query.toString()
+}
+
+export async function getAdminLogs(filters, accessToken, signal) {
+  const query = toQuery(filters)
+  return adminRequest(`/logs${query ? `?${query}` : ''}`, accessToken, signal)
+}
+
+export async function getAdminLogSummary(filters, accessToken, signal) {
+  const query = toQuery(filters)
+  return adminRequest(`/logs/summary${query ? `?${query}` : ''}`, accessToken, signal)
+}
+
+export async function getAdminLog(id, accessToken, signal) {
+  return adminRequest(`/logs/${encodeURIComponent(id)}`, accessToken, signal)
+}
+
+export async function exportAdminLogs(filters, accessToken) {
+  const query = toQuery(filters)
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/logs/export${query ? `?${query}` : ''}`, {
+    headers: { Accept: 'text/csv', Authorization: `Bearer ${accessToken}` },
+  })
+  if (!response.ok) throw new Error(`Log export failed (HTTP ${response.status})`)
+  return response.blob()
 }
 
 export async function updateAdminTicketStatus(id, status, accessToken) {

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { readAuthSession, signOut } from '../../auth/session'
+import { adminRoleLabel, canAccessAdminPath } from '../../auth/adminRoles'
 
 export const adminMenuGroups = [
   { title: 'Platform management', items: [['users', 'Users & Customers'], ['drivers', 'Drivers & Delivery'], ['rides', 'Ride Management'], ['food', 'Food Management'], ['parcels', 'Parcel Management'], ['blood', 'Blood Donation']] },
@@ -34,6 +35,11 @@ export function AdminIcon({ name, size = 20 }) {
     menu: <><path d="M4 6h16M4 12h16M4 18h16"/></>,
     close: <><path d="m6 6 12 12M18 6 6 18"/></>,
     chevron: <path d="m7 10 5 5 5-5"/>,
+    layers: <><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></>,
+    alert: <><path d="m10.3 4.3-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-2.7l-8-14a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></>,
+    refresh: <><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></>,
+    download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5m-5 5V3"/></>,
+    eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>,
   }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.grid}</svg>
 }
@@ -47,6 +53,7 @@ export default function AdminLayout({ title, description, children }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const session = readAuthSession()
   const name = session?.user?.name || 'Administrator'
+  const role = session?.user?.role || 'ADMIN'
   const initials = name.split(/\s+/).map((word) => word[0]).join('').slice(0, 2).toUpperCase()
   const currentSection = window.location.pathname.split('/')[2] || 'dashboard'
 
@@ -58,7 +65,7 @@ export default function AdminLayout({ title, description, children }) {
         <a className="admin-layout-search" href="/admin/users"><AdminIcon name="search" size={17}/><span>Search users, orders, rides...</span></a>
         <button className="admin-icon-button has-dot" type="button" aria-label="Notifications" onClick={() => window.location.assign('/admin/support')}><AdminIcon name="bell"/></button>
         <div className="admin-popover-wrap">
-          <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{initials}</span><span className="admin-profile-copy"><b>{name}</b><small>{session?.user?.role || 'Admin'}</small></span><span className="admin-chevron"><AdminIcon name="chevron" size={14}/></span></button>
+          <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{initials}</span><span className="admin-profile-copy"><b>{name}</b><small>{adminRoleLabel(role)}</small></span><span className="admin-chevron"><AdminIcon name="chevron" size={14}/></span></button>
           {profileOpen && <div className="admin-popover admin-account-popover"><b>{name}</b><a href="/profile">My profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
         </div>
         <button className="admin-mobile-menu" type="button" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} onClick={() => setMobileOpen(!mobileOpen)}><AdminIcon name={mobileOpen ? 'close' : 'menu'}/></button>
@@ -68,7 +75,10 @@ export default function AdminLayout({ title, description, children }) {
       <button className={`admin-sidebar-scrim ${mobileOpen ? 'is-visible' : ''}`} aria-label="Close navigation" onClick={() => setMobileOpen(false)}/>
       <aside className={`admin-sidebar ${mobileOpen ? 'is-open' : ''}`} aria-label="Admin navigation">
         <a className={`admin-menu-link ${currentSection === 'dashboard' ? 'is-active' : ''}`} href="/admin"><AdminIcon name="grid"/><span>Dashboard</span></a>
-        {adminMenuGroups.map((group) => <div className="admin-menu-group" key={group.title}><h2>{group.title}</h2>{group.items.map(([id, label]) => <a className={`admin-menu-link ${currentSection === id ? 'is-active' : ''}`} href={`/admin/${id}`} key={id} onClick={() => setMobileOpen(false)}><AdminIcon name={routeIcons[id]}/><span>{label}</span></a>)}</div>)}
+        {adminMenuGroups.map(group => {
+          const items = group.items.filter(([id]) => canAccessAdminPath(role, `/admin/${id}`))
+          return items.length ? <div className="admin-menu-group" key={group.title}><h2>{group.title}</h2>{items.map(([id, label]) => <a className={`admin-menu-link ${currentSection === id ? 'is-active' : ''}`} href={`/admin/${id}`} key={id} onClick={() => setMobileOpen(false)}><AdminIcon name={routeIcons[id]}/><span>{label}</span></a>)}</div> : null
+        })}
         <div className="admin-sidebar-foot"><span className="admin-status-dot"/><span>Platform status</span><b>Operational</b></div>
       </aside>
       <main className="admin-main">

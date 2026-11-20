@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import dorkarLogo from '../../assets/D-Logo-transparent.png'
 import { readAuthSession, signOut } from '../../auth/session'
+import { adminRoleLabel, canAccessAdminPath } from '../../auth/adminRoles'
 import { getAdminDashboard, getAdminPartners, getAdminRequests, getAdminTickets } from '../../services/adminApi'
 import './DashboardPage.css'
 
@@ -96,11 +97,14 @@ function AdminDashboardPage() {
     setError('')
     try {
       const controller = new AbortController()
+      const role = String(session.user?.role || '').toUpperCase()
+      const hasOperationsScope = ['ADMIN', 'SUPER_ADMIN', 'OPERATIONS_ADMIN'].includes(role)
+      const hasSupportScope = ['ADMIN', 'SUPER_ADMIN', 'SUPPORT_ADMIN'].includes(role)
       const [overview, requestResult, partnerResult, ticketResult] = await Promise.allSettled([
         getAdminDashboard(session.accessToken, controller.signal),
-        getAdminRequests(session.accessToken, controller.signal),
-        getAdminPartners(session.accessToken, controller.signal),
-        getAdminTickets(session.accessToken, controller.signal),
+        hasOperationsScope ? getAdminRequests(session.accessToken, controller.signal) : Promise.resolve([]),
+        hasOperationsScope ? getAdminPartners(session.accessToken, controller.signal) : Promise.resolve([]),
+        hasSupportScope ? getAdminTickets(session.accessToken, controller.signal) : Promise.resolve([]),
       ])
 
       if (overview.status === 'rejected') throw overview.reason
@@ -188,7 +192,7 @@ function AdminDashboardPage() {
             {notificationOpen && <div className="admin-popover"><b>Admin notifications</b><p>{pendingPartners + openTickets ? `${formatCount(pendingPartners + openTickets)} items need attention.` : 'No urgent items are waiting.'}</p><a href="#approvals" onClick={() => setNotificationOpen(false)}>Review dashboard</a></div>}
           </div>
           <div className="admin-popover-wrap">
-            <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{initials}</span><span className="admin-profile-copy"><b>{adminName}</b><small>{session?.user?.role || 'Admin'}</small></span><span className="admin-chevron">⌄</span></button>
+            <button className="admin-profile-button" type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}><span className="admin-avatar">{initials}</span><span className="admin-profile-copy"><b>{adminName}</b><small>{adminRoleLabel(session?.user?.role)}</small></span><span className="admin-chevron">⌄</span></button>
             {profileOpen && <div className="admin-popover admin-account-popover"><b>{adminName}</b><small>{session?.user?.email || session?.user?.phone || ''}</small><button type="button" onClick={signOut}>Sign out</button></div>}
           </div>
           <button className="admin-mobile-menu" type="button" aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'} onClick={() => setMobileNavOpen(!mobileNavOpen)}><Icon name={mobileNavOpen ? 'close' : 'menu'}/></button>
@@ -199,7 +203,7 @@ function AdminDashboardPage() {
         <button className={`admin-sidebar-scrim ${mobileNavOpen ? 'is-visible' : ''}`} aria-label="Close navigation" onClick={() => setMobileNavOpen(false)}/>
         <aside className={`admin-sidebar ${mobileNavOpen ? 'is-open' : ''}`} aria-label="Admin navigation">
           <a className={`admin-menu-link ${activeSection === 'dashboard' ? 'is-active' : ''}`} href="/admin"><Icon name="grid"/><span>Dashboard</span></a>
-          {menuGroups.map((group) => <div className="admin-menu-group" key={group.title}><h2>{group.title}</h2>{group.items.map(([id, label]) => <a className={`admin-menu-link ${activeSection === id ? 'is-active' : ''}`} href={`/admin/${id}`} key={id} onClick={() => setMobileNavOpen(false)}><Icon name={id === 'users' ? 'users' : id === 'drivers' ? 'driver' : id === 'rides' ? 'car' : id === 'food' ? 'food' : id === 'parcels' ? 'box' : id === 'blood' ? 'blood' : id === 'orders' ? 'clipboard' : id === 'payments' ? 'card' : id === 'promotions' ? 'tag' : id === 'support' ? 'help' : id === 'reports' ? 'chart' : id === 'settings' ? 'settings' : id === 'access' ? 'shield' : 'clipboard'}/><span>{label}</span></a>)}</div>)}
+          {menuGroups.map(group => { const items = group.items.filter(([id]) => canAccessAdminPath(session?.user?.role, `/admin/${id}`)); return items.length ? <div className="admin-menu-group" key={group.title}><h2>{group.title}</h2>{items.map(([id, label]) => <a className={`admin-menu-link ${activeSection === id ? 'is-active' : ''}`} href={`/admin/${id}`} key={id} onClick={() => setMobileNavOpen(false)}><Icon name={id === 'users' ? 'users' : id === 'drivers' ? 'driver' : id === 'rides' ? 'car' : id === 'food' ? 'food' : id === 'parcels' ? 'box' : id === 'blood' ? 'blood' : id === 'orders' ? 'clipboard' : id === 'payments' ? 'card' : id === 'promotions' ? 'tag' : id === 'support' ? 'help' : id === 'reports' ? 'chart' : id === 'settings' ? 'settings' : id === 'access' ? 'shield' : 'clipboard'}/><span>{label}</span></a>)}</div> : null })}
           <div className="admin-sidebar-foot"><span className="admin-status-dot"/><span>Platform status</span><b>Operational</b></div>
         </aside>
 

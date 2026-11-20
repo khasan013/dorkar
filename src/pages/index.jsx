@@ -52,6 +52,7 @@ import { DetailedPage } from './PageRenderer'
 import SiteFooter from './SiteFooter'
 import { useEffect } from 'react'
 import { readAuthSession, redirectToLogin } from '../auth/session'
+import { canAccessAdminPath, isAdminRole } from '../auth/adminRoles'
 
 const protectedPaths = new Set([
   '/dashboard',
@@ -139,7 +140,8 @@ export default function Pages() {
   const session = readAuthSession()
   const isProtected = protectedPaths.has(path) && !session
   const isAdminPath = path === '/admin' || path.startsWith('/admin/')
-  const hasAdminRole = ['ADMIN', 'SUPER_ADMIN'].includes(String(session?.user?.role || '').toUpperCase())
+  const hasAdminRole = isAdminRole(session?.user?.role)
+  const hasAdminPageAccess = hasAdminRole && canAccessAdminPath(session?.user?.role, path)
   const adminOnUserDashboard = path === '/dashboard' && hasAdminRole
   useEffect(() => {
     if (isProtected) redirectToLogin()
@@ -151,6 +153,7 @@ export default function Pages() {
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
   if (adminOnUserDashboard) return <main className="auth-redirect" role="status">Opening your admin dashboard…</main>
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
+  if (isAdminPath && !hasAdminPageAccess) return <main className="admin-denied"><div><span>403</span><h1>Admin role does not allow this area</h1><p>Your account can only manage the modules assigned to its role. Contact a Super Admin if you need access.</p><a href="/admin">Return to your admin dashboard</a></div></main>
   if (path === '/') return <HomePage />
   const Page = routes[path]
   if (!Page) return <HomePage />
