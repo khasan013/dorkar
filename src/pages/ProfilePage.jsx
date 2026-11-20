@@ -1,13 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { readAuthSession, saveAuthSession, signOut } from '../auth/session'
-import { uploadMyProfilePhoto } from '../services/profileApi'
+import { isAdminRole } from '../auth/adminRoles'
+import { createSavedLocation, deleteSavedLocation, getMyProfile, getSavedLocations, updateMyProfile, updateSavedLocation, uploadMyProfilePhoto } from '../services/profileApi'
 import heroScenery from '../assets/Hero-bg-illlustration.png'
 import './ProfilePage.css'
 
-const initialProfile = { name: 'Khalid Hasan', phone: '', email: '', birthday: '', area: '' }
-const readPreviewValue = (key, fallback) => {
-  try { return JSON.parse(localStorage.getItem(key)) || fallback } catch { return fallback }
-}
+const sessionProfile = (user = {}) => ({ name: user.name || '', phone: user.phone || '', email: user.email || '', birthday: user.dateOfBirth || '', area: user.preferredArea || '' })
+const locationFromApi = (location) => ({ ...location, label: ({ HOME: 'Home', WORK: 'Work', OTHER: 'Other' })[String(location.label || '').toUpperCase()] || location.label || 'Other', isDefault: location.isDefault ?? location.default ?? false })
 const areas = ['Gulshan', 'Banani', 'Dhanmondi', 'Mirpur', 'Uttara', 'Mohammadpur', 'Bashundhara', 'Badda', 'Motijheel', 'Other Dhaka Areas']
 
 const navItems = [
@@ -39,26 +38,69 @@ function ProfileIcon({ name }) {
 
 export default function ProfilePage({ editable = false }) {
   const session = readAuthSession()
-  const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(String(session?.user?.role || '').toUpperCase())
+  const token = session?.accessToken
+  const isAdmin = isAdminRole(session?.user?.role)
   const visibleNavItems = isAdmin ? navItems.filter(([icon]) => icon === 'profile') : navItems
-  const [profile, setProfile] = useState(() => readPreviewValue('dorkar-profile-preview', initialProfile))
-  const [savedProfile, setSavedProfile] = useState(() => readPreviewValue('dorkar-profile-preview', initialProfile))
+  const [profile, setProfile] = useState(() => sessionProfile(session?.user))
+  const [savedProfile, setSavedProfile] = useState(() => sessionProfile(session?.user))
+  const [profileLoading, setProfileLoading] = useState(true)
+  const [profileUnavailable, setProfileUnavailable] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
   const [avatar, setAvatar] = useState(() => session?.user?.avatarUrl || '')
   const [photoUploading, setPhotoUploading] = useState(false)
   const [photoNotice, setPhotoNotice] = useState('')
   const [notice, setNotice] = useState('')
   const [showLocationForm, setShowLocationForm] = useState(false)
-  const [locations, setLocations] = useState(() => readPreviewValue('dorkar-profile-locations-preview', []))
+  const [locations, setLocations] = useState([])
+  const [locationsLoading, setLocationsLoading] = useState(!isAdmin)
   const [editingLocation, setEditingLocation] = useState(null)
   const [locationDraft, setLocationDraft] = useState({ label: 'Home', address: '' })
   const [logoutOpen, setLogoutOpen] = useState(false)
   const avatarInput = useRef(null)
 
+  useEffect(() => {
+    if (!token) {
+      setProfileLoading(false)
+      setProfileUnavailable(true)
+      setLocationsLoading(false)
+      setNotice('Sign in to load your saved account details.')
+      return undefined
+    }
+    const controller = new AbortController()
+    setProfileLoading(true)
+    getMyProfile(token, controller.signal).then(user => {
+      if (controller.signal.aborted) return
+      const current = sessionProfile(user)
+      setProfile(current)
+      setSavedProfile(current)
+      setAvatar(user?.avatarUrl || '')
+      const activeSession = readAuthSession()
+      if (activeSession) saveAuthSession({ ...activeSession, user: { ...activeSession.user, ...user } })
+      setProfileUnavailable(false)
+    }).catch(error => {
+      if (!controller.signal.aborted) {
+        setProfileUnavailable(true)
+        setNotice(error.message || 'Could not load your saved account details.')
+      }
+    }).finally(() => { if (!controller.signal.aborted) setProfileLoading(false) })
+
+    if (!isAdmin) {
+      setLocationsLoading(true)
+      getSavedLocations(token, controller.signal).then(items => {
+        if (!controller.signal.aborted) setLocations(Array.isArray(items) ? items.map(locationFromApi) : [])
+      }).catch(error => {
+        if (!controller.signal.aborted) setNotice(error.message || 'Could not load saved locations.')
+      }).finally(() => { if (!controller.signal.aborted) setLocationsLoading(false) })
+    }
+    return () => controller.abort()
+  }, [token, isAdmin])
+
   const initials = profile.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('') || 'KH'
   const setField = (event) => setProfile(current => ({ ...current, [event.target.name]: event.target.value }))
 
-  const saveProfile = (event) => {
+  const saveProfile = async (event) => {
     event.preventDefault()
+    if (profileLoading || profileUnavailable || profileSaving) return
     const form = event.currentTarget
     if (!form.reportValidity()) return
     const phone = profile.phone.replace(/\D/g, '')
@@ -67,9 +109,27 @@ export default function ProfilePage({ editable = false }) {
       setNotice('Enter a valid Bangladesh mobile number.')
       return
     }
-    setSavedProfile(profile)
-    localStorage.setItem('dorkar-profile-preview', JSON.stringify(profile))
-    setNotice('Your profile is updated in this preview. Connect the profile API to save it to your account.')
+    setProfileSaving(true)
+    setNotice('')
+    try {
+      const updated = await updateMyProfile({
+        name: profile.name.trim(),
+        phone: fieldLocked('phone') ? profile.phone : localPhone || null,
+        email: profile.email.trim() || null,
+        dateOfBirth: profile.birthday || null,
+        preferredArea: isAdmin ? null : profile.area || null,
+      }, token)
+      const current = sessionProfile(updated)
+      setProfile(current)
+      setSavedProfile(current)
+      const activeSession = readAuthSession()
+      if (activeSession) saveAuthSession({ ...activeSession, user: { ...activeSession.user, ...updated } })
+      setNotice('Your account details have been saved.')
+    } catch (error) {
+      setNotice(error.message || 'Could not save your account details. Please try again.')
+    } finally {
+      setProfileSaving(false)
+    }
   }
 
   const discardProfile = () => {
@@ -117,30 +177,38 @@ export default function ProfilePage({ editable = false }) {
     }
   }
 
-  const saveLocation = (event) => {
+  const saveLocation = async (event) => {
     event.preventDefault()
-    if (editingLocation !== null) {
-      setLocations(current => {
-        const updated = current.map((location, index) => index === editingLocation ? locationDraft : location)
-        localStorage.setItem('dorkar-profile-locations-preview', JSON.stringify(updated))
-        return updated
-      })
+    const payload = { label: locationDraft.label.toUpperCase(), address: locationDraft.address.trim(), isDefault: locations.length === 0 }
+    try {
+      if (editingLocation !== null) await updateSavedLocation(editingLocation, payload, token)
+      else await createSavedLocation(payload, token)
+      const current = await getSavedLocations(token)
+      setLocations(Array.isArray(current) ? current.map(locationFromApi) : [])
       setEditingLocation(null)
-    } else {
-      setLocations(current => {
-        const updated = [...current, locationDraft]
-        localStorage.setItem('dorkar-profile-locations-preview', JSON.stringify(updated))
-        return updated
-      })
+      setLocationDraft({ label: 'Home', address: '' })
+      setShowLocationForm(false)
+      setNotice('Saved location updated.')
+    } catch (error) {
+      setNotice(error.message || 'Could not save the location. Please try again.')
     }
-    setLocationDraft({ label: 'Home', address: '' })
-    setShowLocationForm(false)
-    setNotice('Location updated in this preview.')
   }
+
+  const removeLocation = async (id) => {
+    try {
+      await deleteSavedLocation(id, token)
+      setLocations(current => current.filter(location => location.id !== id))
+      setNotice('Saved location removed.')
+    } catch (error) {
+      setNotice(error.message || 'Could not remove the location. Please try again.')
+    }
+  }
+
+  const fieldLocked = (field) => isAdmin && Boolean(String(savedProfile[field] || '').trim())
 
   return <main className="profile-page">
     <section className="profile-hero">
-      <div><span className="eyebrow">{editable ? 'ACCOUNT SETTINGS' : 'MY PROFILE'}</span><h1>{editable ? 'Settings' : 'Your Profile'}</h1><p>{editable ? 'Update your personal details and saved locations.' : 'View your personal information, contact details, and saved locations.'}</p></div>
+      <div><span className="eyebrow">{editable ? 'ACCOUNT SETTINGS' : 'MY PROFILE'}</span><h1>{editable ? 'Settings' : 'Your Profile'}</h1><p>{editable ? (isAdmin ? 'Update your account preferences and profile picture.' : 'Update your personal details and saved locations.') : (isAdmin ? 'View your administrator account details.' : 'View your personal information, contact details, and saved locations.')}</p></div>
       <div className="profile-hero-art" aria-hidden="true"><img src={heroScenery} alt="" /></div>
     </section>
 
@@ -164,31 +232,34 @@ export default function ProfilePage({ editable = false }) {
       </aside>
 
       <div className="profile-main-column">
+        {profileLoading&&<p className="profile-data-alert" role="status">Loading saved account details…</p>}
+        {profileUnavailable&&<p className="profile-data-alert is-error" role="alert">{notice || 'Your account details could not be loaded. Try refreshing the page.'}</p>}
         <section className="profile-panel" id="profile-information">
-          <div className="profile-panel-heading"><span><ProfileIcon name="profile"/></span><div><h2>Personal Information</h2><p>{editable ? 'Edit your contact details and account information.' : 'Your saved account details.'}</p></div>{!editable&&<a className="profile-add-button" href="/settings"><ProfileIcon name="edit"/><span>Edit details</span></a>}</div>
+          <div className="profile-panel-heading"><span><ProfileIcon name="profile"/></span><div><h2>Personal Information</h2><p>{editable ? (isAdmin ? 'Your saved identity details are protected.' : 'Edit your contact details and account information.') : 'Your saved account details.'}</p></div>{!editable&&<a className="profile-add-button" href="/settings"><ProfileIcon name="edit"/><span>Edit details</span></a>}</div>
           {editable ? <form className="profile-form" onSubmit={saveProfile}>
-            <label className="profile-field"><span>Full name</span><input name="name" value={profile.name} onChange={setField} placeholder="Your name" autoComplete="name" required/></label>
-            <label className="profile-field"><span>Phone number</span><input name="phone" value={profile.phone} onChange={setField} placeholder="01XXXXXXXXX" type="tel" inputMode="tel" autoComplete="tel"/></label>
-            <label className="profile-field"><span>Email address</span><input name="email" value={profile.email} onChange={setField} placeholder="you@example.com" type="email" autoComplete="email"/></label>
-            <label className="profile-field"><span>Date of birth</span><input name="birthday" value={profile.birthday} onChange={setField} type="date"/></label>
-            <label className="profile-field"><span>Preferred area</span><select name="area" value={profile.area} onChange={setField}><option value="">Select preferred area</option>{areas.map(area=><option key={area}>{area}</option>)}</select></label>
-            <div className="profile-form-actions"><p>Update your details to keep bookings and account notices accurate.</p><button className="button primary" type="submit"><span aria-hidden="true">✓</span> Save Changes</button><button className="button outline" type="button" onClick={discardProfile}>Discard</button></div>
+            <label className="profile-field"><span>Full name {fieldLocked('name')&&<small className="profile-locked-label">Saved</small>}</span><input name="name" value={profile.name} onChange={setField} placeholder="Your name" autoComplete="name" required disabled={profileLoading||profileUnavailable||fieldLocked('name')}/></label>
+            <label className="profile-field"><span>Phone number {fieldLocked('phone')&&<small className="profile-locked-label">Saved</small>}</span><input name="phone" value={profile.phone} onChange={setField} placeholder="01XXXXXXXXX" type="tel" inputMode="tel" autoComplete="tel" disabled={profileLoading||profileUnavailable||fieldLocked('phone')}/></label>
+            <label className="profile-field"><span>Email address {fieldLocked('email')&&<small className="profile-locked-label">Saved</small>}</span><input name="email" value={profile.email} onChange={setField} placeholder="you@example.com" type="email" autoComplete="email" disabled={profileLoading||profileUnavailable||fieldLocked('email')}/></label>
+            <label className="profile-field"><span>Date of birth</span><input name="birthday" value={profile.birthday} onChange={setField} type="date" disabled={profileLoading||profileUnavailable}/></label>
+            {!isAdmin&&<label className="profile-field"><span>Preferred area</span><select name="area" value={profile.area} onChange={setField} disabled={profileLoading||profileUnavailable}><option value="">Select preferred area</option>{profile.area&&!areas.includes(profile.area)&&<option value={profile.area}>{profile.area}</option>}{areas.map(area=><option key={area}>{area}</option>)}</select></label>}
+            <div className="profile-form-actions"><p>{isAdmin?'Your name, phone, and email are locked once saved in your account.':'Update your details to keep bookings and account notices accurate.'}</p><button className="button primary" type="submit" disabled={profileLoading||profileUnavailable||profileSaving}><span aria-hidden="true">✓</span> {profileSaving?'Saving…':'Save Changes'}</button><button className="button outline" type="button" onClick={discardProfile} disabled={profileLoading||profileUnavailable||profileSaving}>Discard</button></div>
             {notice&&<p className="profile-notice" role="status">{notice}</p>}
           </form> : <div className="profile-details-grid">
             <div><span>Full name</span><b>{profile.name || 'Not added'}</b></div>
             <div><span>Phone number</span><b>{profile.phone || 'Not added'}</b></div>
             <div><span>Email address</span><b>{profile.email || 'Not added'}</b></div>
             <div><span>Date of birth</span><b>{profile.birthday || 'Not added'}</b></div>
-            <div><span>Preferred area</span><b>{profile.area || 'Not added'}</b></div>
+            {!isAdmin&&<div><span>Preferred area</span><b>{profile.area || 'Not added'}</b></div>}
           </div>}
         </section>
 
-        <section className="profile-panel saved-locations-panel" id="saved-locations">
+        {!isAdmin&&<section className="profile-panel saved-locations-panel" id="saved-locations">
           <div className="profile-panel-heading"><span><ProfileIcon name="locations"/></span><div><h2>Saved Locations</h2><p>{editable ? 'Manage the addresses you use most.' : 'Your frequent pickup and delivery addresses.'}</p></div>{editable&&<button className="profile-add-button" type="button" onClick={()=>{setEditingLocation(null);setLocationDraft({label:'Home',address:''});setShowLocationForm(value=>!value)}}>{showLocationForm?'×':'+'}<span>{showLocationForm?'Close':'Add location'}</span></button>}</div>
-          {locations.length===0&&!showLocationForm&&<div className="profile-empty-state"><span><ProfileIcon name="home"/></span><div><b>No saved locations yet</b><p>Add your home, work, or another frequent address.</p></div></div>}
-          {locations.map((location,index)=><div className="profile-location-row" key={`${location.label}-${index}`}><span className="profile-location-icon"><ProfileIcon name={location.label==='Work'?'work':'home'}/></span><div><b>{location.label}</b><p>{location.address}</p></div>{editable&&<><button type="button" aria-label={`Edit ${location.label} location`} onClick={()=>{setEditingLocation(index);setLocationDraft(location);setShowLocationForm(true)}}><ProfileIcon name="edit"/></button><button type="button" aria-label={`Delete ${location.label} location`} onClick={()=>setLocations(current=>{const updated=current.filter((_,itemIndex)=>itemIndex!==index);localStorage.setItem('dorkar-profile-locations-preview',JSON.stringify(updated));return updated})}>×</button></>}</div>)}
+          {locationsLoading&&<div className="profile-empty-state"><div><b>Loading saved locations…</b></div></div>}
+          {!locationsLoading&&locations.length===0&&!showLocationForm&&<div className="profile-empty-state"><span><ProfileIcon name="home"/></span><div><b>No saved locations yet</b><p>Add your home, work, or another frequent address.</p></div></div>}
+          {!locationsLoading&&locations.map(location=><div className="profile-location-row" key={location.id}><span className="profile-location-icon"><ProfileIcon name={location.label==='Work'?'work':'home'}/></span><div><b>{location.label}{location.isDefault?' · Default':''}</b><p>{location.address}</p></div>{editable&&<><button type="button" aria-label={`Edit ${location.label} location`} onClick={()=>{setEditingLocation(location.id);setLocationDraft({label:location.label,address:location.address});setShowLocationForm(true)}}><ProfileIcon name="edit"/></button><button type="button" aria-label={`Delete ${location.label} location`} onClick={()=>removeLocation(location.id)}>×</button></>}</div>)}
           {editable&&showLocationForm&&<form className="profile-location-form" onSubmit={saveLocation}><label className="profile-field"><span>Location label</span><select value={locationDraft.label} onChange={event=>setLocationDraft(current=>({...current,label:event.target.value}))}><option>Home</option><option>Work</option><option>Other</option></select></label><label className="profile-field"><span>Address</span><input value={locationDraft.address} onChange={event=>setLocationDraft(current=>({...current,address:event.target.value}))} placeholder="House, road, area, city" required/></label><button className="button primary" type="submit">{editingLocation===null?'Save location':'Update location'}</button></form>}
-        </section>
+        </section>}
 
       </div>
     </div>
