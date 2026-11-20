@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { readAuthSession } from '../../auth/session'
-import { getAdminUsers } from '../../services/adminApi'
+import { deleteAdminUser, getAdminUsers, updateAdminUserStatus } from '../../services/adminApi'
 import AdminLayout, { AdminIcon } from './AdminLayout'
 import './UsersPage.css'
 
@@ -35,6 +35,8 @@ export default function UsersPage() {
   const [joinedRange, setJoinedRange] = useState('all')
   const [page, setPage] = useState(1)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [busyUserId, setBusyUserId] = useState(null)
+  const [notice, setNotice] = useState('')
 
   const loadUsers = async (signal) => {
     setLoading(true)
@@ -78,6 +80,7 @@ export default function UsersPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE))
   const visibleUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  useEffect(() => setPage(current => Math.min(current, totalPages)), [totalPages])
   const newUsers = users.filter(user => {
     const joinedAt = Date.parse(user.createdAt || '')
     return Number.isFinite(joinedAt) && joinedAt >= Date.now() - 30 * 24 * 60 * 60 * 1000
@@ -94,15 +97,49 @@ export default function UsersPage() {
     setPage(1)
   }
 
+  const removeUser = async user => {
+    const confirmed = window.confirm(`Delete ${user.name || 'this user'}'s account? This disables sign-in and keeps their booking and payment history.`)
+    if (!confirmed) return
+    setBusyUserId(user.id)
+    setError('')
+    setNotice('')
+    try {
+      await deleteAdminUser(user.id, session?.accessToken)
+      setUsers(current => current.map(item => item.id === user.id ? { ...item, enabled: false } : item))
+      setSelectedUser(current => current?.id === user.id ? null : current)
+      setNotice(`${user.name || 'User'}'s account was deactivated.`)
+    } catch (requestError) {
+      setError(requestError.message || 'The user account could not be deleted.')
+    } finally {
+      setBusyUserId(null)
+    }
+  }
+
+  const restoreUser = async user => {
+    setBusyUserId(user.id)
+    setError('')
+    setNotice('')
+    try {
+      await updateAdminUserStatus(user.id, true, session?.accessToken)
+      setUsers(current => current.map(item => item.id === user.id ? { ...item, enabled: true } : item))
+      setNotice(`${user.name || 'User'}'s account was reactivated.`)
+    } catch (requestError) {
+      setError(requestError.message || 'The user account could not be reactivated.')
+    } finally {
+      setBusyUserId(null)
+    }
+  }
+
   return <AdminLayout title="Users & Customers" description="Browse user accounts and review customer activity.">
     <div className="users-page">
       {error && <div className="users-alert" role="alert"><span><AdminIcon name="shield" size={18}/></span><p>{error}</p><button type="button" onClick={() => loadUsers()}>Try again</button></div>}
+      {notice && <div className="users-notice" role="status"><span>✓</span><p>{notice}</p><button type="button" onClick={() => setNotice('')} aria-label="Dismiss notification">×</button></div>}
 
       <section className="users-stat-grid" aria-label="User account summary">
         <StatCard icon="users" label="Total Users" value={loading ? '—' : numberFormat.format(users.length)} tone="blue" note="Customer accounts"/>
         <StatCard icon="driver" label="New Users" value={loading ? '—' : numberFormat.format(newUsers)} tone="purple" note="Joined in the last 30 days"/>
         <StatCard icon="shield" label="Verified Users" value="—" tone="orange" note="Verification data unavailable"/>
-        <StatCard icon="close" label="Blocked / Suspended" value="—" tone="red" note="Account status data unavailable"/>
+        <StatCard icon="close" label="Blocked / Suspended" value={loading ? '—' : numberFormat.format(users.filter(user => user.enabled === false).length)} tone="red" note="Sign-in disabled by an administrator"/>
       </section>
 
       <section className="users-table-panel" aria-labelledby="all-users-title">
@@ -119,17 +156,18 @@ export default function UsersPage() {
 
         <div className="users-table-scroll">
           <table className="users-table">
-            <thead><tr><th scope="col">User</th><th scope="col">Phone</th><th scope="col">Joined Date</th><th scope="col">Account type</th><th scope="col">Actions</th></tr></thead>
+            <thead><tr><th scope="col">User</th><th scope="col">Phone</th><th scope="col">Joined Date</th><th scope="col">Account type</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
             <tbody>
-              {loading && Array.from({ length: 5 }, (_, index) => <tr key={`loading-${index}`} className="users-loading-row"><td colSpan="5"><i/></td></tr>)}
+              {loading && Array.from({ length: 5 }, (_, index) => <tr key={`loading-${index}`} className="users-loading-row"><td colSpan="6"><i/></td></tr>)}
               {!loading && visibleUsers.map(user => <tr key={user.id}>
                 <td><div className="users-identity"><span className="users-avatar">{initials(user.name)}</span><span><b>{user.name || 'Unnamed user'}</b><small>Customer account</small></span></div></td>
                 <td>{user.phone || '—'}</td>
                 <td>{formatDate(user.createdAt)}</td>
                 <td><span className="users-role-badge">{String(user.role || 'USER').replaceAll('_', ' ')}</span></td>
-                <td><button className="users-view-button" type="button" onClick={() => setSelectedUser(user)} aria-label={`View ${user.name || 'user'} details`} title="View account details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></button></td>
+                <td><span className={`users-account-status ${user.enabled === false ? 'suspended' : 'active'}`}>{user.enabled === false ? 'Suspended' : 'Active'}</span></td>
+                <td><div className="users-row-actions"><button className="users-view-button" type="button" onClick={() => setSelectedUser(user)} aria-label={`View ${user.name || 'user'} details`} title="View account details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></button>{user.enabled === false ? <button className="users-restore-button" type="button" disabled={busyUserId === user.id} onClick={() => restoreUser(user)} aria-label={`Reactivate ${user.name || 'user'}`} title="Reactivate account">{busyUserId === user.id ? '…' : 'Restore'}</button> : <button className="users-delete-button" type="button" disabled={busyUserId === user.id} onClick={() => removeUser(user)} aria-label={`Delete ${user.name || 'user'}`} title="Delete account">{busyUserId === user.id ? '…' : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5.5 7l1 13h11l1-13M9 7V4h6v3"/></svg>}</button>}</div></td>
               </tr>)}
-              {!loading && !error && visibleUsers.length === 0 && <tr><td colSpan="5"><div className="users-empty"><span><AdminIcon name="users" size={23}/></span><b>{users.length ? 'No users match these filters' : 'No customer accounts found'}</b><p>{users.length ? 'Try changing your search or joined date.' : 'Customer accounts will appear here when they register.'}</p>{(query || joinedRange !== 'all') && <button type="button" onClick={resetFilters}>Clear filters</button>}</div></td></tr>}
+              {!loading && !error && visibleUsers.length === 0 && <tr><td colSpan="6"><div className="users-empty"><span><AdminIcon name="users" size={23}/></span><b>{users.length ? 'No users match these filters' : 'No customer accounts found'}</b><p>{users.length ? 'Try changing your search or joined date.' : 'Customer accounts will appear here when they register.'}</p>{(query || joinedRange !== 'all') && <button type="button" onClick={resetFilters}>Clear filters</button>}</div></td></tr>}
             </tbody>
           </table>
         </div>
@@ -138,6 +176,6 @@ export default function UsersPage() {
       </section>
     </div>
 
-    {selectedUser && <div className="users-dialog-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelectedUser(null) }}><section className="users-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="user-detail-title"><button className="users-dialog-close" type="button" aria-label="Close user details" onClick={() => setSelectedUser(null)}>×</button><span className="users-dialog-avatar">{initials(selectedUser.name)}</span><span className="users-dialog-kicker">CUSTOMER ACCOUNT</span><h2 id="user-detail-title">{selectedUser.name || 'Unnamed user'}</h2><dl><div><dt>Phone number</dt><dd>{selectedUser.phone || 'Not provided'}</dd></div><div><dt>Account type</dt><dd>{String(selectedUser.role || 'USER').replaceAll('_', ' ')}</dd></div><div><dt>Joined</dt><dd>{formatDate(selectedUser.createdAt)}</dd></div><div><dt>Email</dt><dd>Not provided by the current admin API</dd></div></dl><p className="users-dialog-note">Account status, verification, and order history are not included in the current admin user response.</p><button className="users-dialog-done" type="button" onClick={() => setSelectedUser(null)}>Done</button></section></div>}
+    {selectedUser && <div className="users-dialog-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelectedUser(null) }}><section className="users-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="user-detail-title"><button className="users-dialog-close" type="button" aria-label="Close user details" onClick={() => setSelectedUser(null)}>×</button><span className="users-dialog-avatar">{initials(selectedUser.name)}</span><span className="users-dialog-kicker">CUSTOMER ACCOUNT</span><h2 id="user-detail-title">{selectedUser.name || 'Unnamed user'}</h2><dl><div><dt>Phone number</dt><dd>{selectedUser.phone || 'Not provided'}</dd></div><div><dt>Account type</dt><dd>{String(selectedUser.role || 'USER').replaceAll('_', ' ')}</dd></div><div><dt>Joined</dt><dd>{formatDate(selectedUser.createdAt)}</dd></div><div><dt>Email</dt><dd>{selectedUser.email || 'Not provided'}</dd></div><div><dt>Status</dt><dd>{selectedUser.enabled === false ? 'Suspended' : 'Active'}</dd></div></dl><p className="users-dialog-note">Deleting a customer disables sign-in while preserving service and payment history.</p><button className="users-dialog-done" type="button" onClick={() => setSelectedUser(null)}>Done</button></section></div>}
   </AdminLayout>
 }

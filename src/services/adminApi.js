@@ -29,6 +29,14 @@ export async function getAdminUsers(accessToken, signal) {
   return adminRequest('/users', accessToken, signal)
 }
 
+export async function deleteAdminUser(id, accessToken) {
+  return adminMutation(`/users/${encodeURIComponent(id)}`, accessToken, 'DELETE')
+}
+
+export async function updateAdminUserStatus(id, enabled, accessToken) {
+  return adminMutation(`/users/${encodeURIComponent(id)}/status?enabled=${enabled}`, accessToken, 'PATCH')
+}
+
 export async function updateAdminRequestStatus(id, status, accessToken) {
   return adminMutation(`/requests/${encodeURIComponent(id)}/status?status=${encodeURIComponent(status)}`, accessToken, 'PATCH')
 }
