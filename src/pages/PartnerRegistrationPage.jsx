@@ -45,7 +45,7 @@ export default function PartnerRegistrationPage() {
         <span className="eyebrow">PARTNER WITH DORKAR</span>
         <h1>Grow Your Business<br/>with <span className="dorkar-word">Dorkar</span></h1>
         <p>Join our partner network and reach more customers across Bangladesh. Choose the partnership that fits your business or service.</p>
-        <div className="partner-hero-benefits"><span><i aria-hidden="true">↗</i><b>More Customers</b></span><span><i aria-hidden="true">৳</i><b>Low Commission</b></span><span><i aria-hidden="true">✓</i><b>Trusted Platform</b></span></div>
+        <div className="partner-hero-benefits"><span><i aria-hidden="true"></i><b>More Customers</b></span><span><i aria-hidden="true">৳</i><b>Low Commission</b></span><span><i aria-hidden="true">✓</i><b>Trusted Platform</b></span></div>
       </div>
       <div className="partner-hero-image-wrap"><img src={partnerNetworkImage} alt="Dorkar delivery, restaurant, and ride partners in Bangladesh"/></div>
     </section>
@@ -54,8 +54,8 @@ export default function PartnerRegistrationPage() {
       <div className="partner-section-heading"><h2 id="partner-choice-title">Choose Your Partner Type</h2><p>Select how you want to partner with Dorkar.</p></div>
       <div className="partner-category-grid" role="radiogroup" aria-label="Partnership type">
         {partnerTypes.map(type => <button className={`partner-category ${type.tone} ${partnerType===type.value?'selected':''}`} type="button" role="radio" aria-checked={partnerType===type.value} onClick={()=>{setPartnerType(type.value);setError('')}} key={type.value}>
-          <span className="partner-category-copy"><span className="partner-category-mark" aria-hidden="true">{type.title==='Restaurant'?'R':type.title==='Ride Partner'?'R':'D'}</span><b>{type.title==='Restaurant'?'Restaurant Partner':type.title}</b><small>{type.title==='Restaurant'?'Bring your menu to thousands of customers.':type.title==='Ride Partner'?'Drive on your schedule and earn more.':'Earn by completing deliveries.'}</small></span><span className="partner-category-arrow" aria-hidden="true">→</span><span className="partner-category-image"><img src={type.title==='Restaurant'?restaurantPartnerImage:type.title==='Ride Partner'?rideImage:partnerNetworkImage} alt=""/></span><span className="partner-radio" aria-hidden="true"/>
-        </button>)}
+          <span className="partner-category-copy"><span className="partner-category-mark" aria-hidden="true">{type.title==='Restaurant'?'R':type.title==='Ride Partner'?'R':'D'}</span><b>{type.title==='Restaurant'?'Restaurant Partner':type.title}</b><small>{type.title==='Restaurant'?'Bring your menu to thousands of customers.':type.title==='Ride Partner'?'Drive on your schedule and earn more.':'Earn by completing deliveries.'}</small></span><span className="partner-category-image"><img src={type.title==='Restaurant'?restaurantPartnerImage:type.title==='Ride Partner'?rideImage:partnerNetworkImage} alt=""/></span><span className="partner-radio" aria-hidden="true"/>
+       </button>)}
       </div>
     </section>
 
@@ -68,9 +68,9 @@ export default function PartnerRegistrationPage() {
         <label className="partner-field"><span>Email address <i>*</i></span><input name="email" type="email" autoComplete="email" placeholder="you@example.com" required/></label>
         <label className="partner-field"><span>Business location <i>*</i></span><input name="location" autoComplete="street-address" placeholder="City and area (e.g. Gulshan, Dhaka)" required/></label>
         {error&&<p className="partner-form-error" role="alert">{error}</p>}
-        <div className="partner-form-submit"><button className="button primary" type="submit" disabled={submitting}>{submitting?'Checking details…':'Submit Interest'} <span aria-hidden="true">→</span></button><p>By submitting, you agree to be contacted about partnership opportunities.</p></div>
+        <div className="partner-form-submit"><button className="button primary" type="submit" disabled={submitting}>{submitting?'Checking details…':'Submit Interest'}</button><p>By submitting, you agree to be contacted about partnership opportunities.</p></div>
       </form>}
     </section>
-    <div className="partner-bottom-note"><span>Questions about joining?</span><a href="/support">Visit Help & Support →</a></div>
+    <div className="partner-bottom-note"><span>Questions about joining?</span><a href="/support">Visit Help & Support</a></div>
   </main>
 }

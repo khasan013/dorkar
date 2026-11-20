@@ -62,8 +62,8 @@ export default function HowItWorksPage() {
         {serviceLinks.map(([image, title, description, href, tone]) => <a className={`how-service-card ${tone}`} href={href} key={href}>
           <span className="how-service-image"><img src={image} alt=""/></span>
           <div><h3>{title}</h3><p>{description}</p></div>
-          <b aria-hidden="true">→</b>
-        </a>)}
+          
+       </a>)}
       </div>
     </section>
   </div>

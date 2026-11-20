@@ -73,7 +73,7 @@ export default function PaymentPage() {
             <input type="radio" name="paymentMethod" value={method.id} checked={selected === method.id} onChange={() => { setSelected(method.id); setSaved(false); setNotice('') }} />
             <span className={`payment-method-icon ${method.icon}`}><PaymentMark type={method.icon}/></span>
             <span className="payment-method-copy"><b>{method.title}</b><small>{method.description}</small></span>
-            {method.id === 'card' ? <NetworkMarks/> : <span className="payment-method-arrow" aria-hidden="true">›</span>}
+            {method.id === 'card' && <NetworkMarks/>}
           </label>)}
         </div>
         <button className="payment-save-button" type="submit">Save Preference</button>

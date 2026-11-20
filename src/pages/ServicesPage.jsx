@@ -19,9 +19,9 @@ export default function ServicesPage() {
     </section>
     <section className="services-page-grid" aria-label="All Dorkar services">
       {services.map(service => <a className={`services-page-card ${service.tone}`} href={service.href} key={service.title}>
-        <div className="services-page-card-copy"><span className="eyebrow">DORKAR</span><h2>{service.title}</h2><p>{service.text}</p><span className="services-page-action">{service.action}<span aria-hidden="true"> →</span></span></div>
+        <div className="services-page-card-copy"><span className="eyebrow">DORKAR</span><h2>{service.title}</h2><p>{service.text}</p><span className="services-page-action">{service.action}</span></div>
         <img src={service.image} alt="" />
-      </a>)}
+     </a>)}
     </section>
   </div>
 }

@@ -123,7 +123,7 @@ export default function ProfilePage({ editable = false }) {
         </div>
         <nav className="profile-nav" aria-label="Profile menu">
           <span className="profile-nav-label">ACCOUNT</span>
-          {visibleNavItems.map(([icon, label, href]) => <a className={icon===(editable?'settings':'profile')?'active':''} href={href} key={icon}><ProfileIcon name={icon}/><span>{label}</span>{icon===(editable?'settings':'profile')&&<b aria-hidden="true">›</b>}</a>)}
+          {visibleNavItems.map(([icon, label, href]) => <a className={icon===(editable?'settings':'profile')?'active':''} href={href} key={icon}><ProfileIcon name={icon}/><span>{label}</span></a>)}
           {!isAdmin&&<span className="profile-nav-label profile-nav-label-secondary">PREFERENCES</span>}
           <button className="profile-logout-link" type="button" onClick={()=>setLogoutOpen(true)}><ProfileIcon name="logout"/><span>Log Out</span></button>
         </nav>

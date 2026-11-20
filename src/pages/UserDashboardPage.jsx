@@ -58,7 +58,7 @@ function DashboardNavbar() {
         </div>
         <div className="nav-menu-wrap">
           <button className="notification-trigger" aria-label="Notifications" aria-expanded={menu === 'notifications'} onClick={() => setMenu(menu === 'notifications' ? '' : 'notifications')}><Icon name="bell"/><i/></button>
-          {menu === 'notifications' && <div className="nav-popover notification-popover"><b>Notifications</b><a href="/notifications">Your driver is on the way <small>Ride · 10 min ago</small></a><a href="/notifications">Kacchi Bhai received your order <small>Food · 1 hour ago</small></a><a className="popover-link" href="/notifications">View all notifications →</a></div>}
+          {menu === 'notifications' && <div className="nav-popover notification-popover"><b>Notifications</b><a href="/notifications">Your driver is on the way <small>Ride · 10 min ago</small></a><a href="/notifications">Kacchi Bhai received your order <small>Food · 1 hour ago</small></a><a className="popover-link" href="/notifications">View all notifications</a></div>}
         </div>
         <div className="nav-menu-wrap profile-menu-wrap">
           <button className="profile-trigger" onClick={() => setMenu(menu === 'profile' ? '' : 'profile')} aria-expanded={menu === 'profile'}><span className="profile-avatar">{initials}</span><span className="profile-name">{userName}</span><Icon name="chevron" size={17}/></button>
@@ -79,7 +79,7 @@ function WelcomeHero() {
       <p className="dashboard-welcome">Your all-in-one on-demand services in Bangladesh.</p>
       <h1>Your Daily Needs,<br/>One App — <span>Dorkar</span></h1>
       <p className="dashboard-description">Ride, order food, send parcels, or donate blood —<br className="dashboard-desktop-break"/> all in one place.</p>
-      <a href="/ride/booking" className="dashboard-book-button">Book a Ride <span>→</span></a>
+      <a href="/ride/booking" className="dashboard-book-button">Book a Ride</a>
     </div>
     <img className="dashboard-scooter" src={scooter} alt="Dorkar delivery scooter" />
   </section>
@@ -89,13 +89,13 @@ function ServiceCard({ service }) {
   return <a className={`dashboard-service-card ${service.color}`} href={service.href}>
     <span className="dashboard-service-icon"><Icon name={service.icon} size={28}/></span>
     <span className="dashboard-service-text"><b>{service.name}</b><small>{service.description}</small></span>
-    <span className="dashboard-service-arrow" aria-hidden="true">→</span>
-  </a>
+    
+ </a>
 }
 
 function RecentActivity() {
   return <section className="recent-activity">
-    <div className="activity-heading"><h2>Recent Activity</h2><a href="/activity">View All <span>→</span></a></div>
+    <div className="activity-heading"><h2>Recent Activity</h2><a href="/activity">View All</a></div>
     <div className="activity-list">
       {activities.map((activity) => <article className="activity-row" key={activity.title}>
         <span className={`activity-icon ${activity.color}`}><Icon name={activity.icon} size={27}/></span>

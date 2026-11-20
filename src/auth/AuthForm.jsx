@@ -109,8 +109,8 @@ export default function AuthForm({ path }) {
         </label>
       </div>
       <button className="button primary" type="submit" disabled={submitting}>
-        {submitting ? 'Please wait…' : isRegister ? 'Create account →' : 'Sign in →'}
-      </button>
+        {submitting ? 'Please wait…' : isRegister ? 'Create account ' : 'Sign in '}
+     </button>
       {error && <p className="form-notice auth-error" role="alert" aria-live="polite">{error}</p>}
     </form>
   )

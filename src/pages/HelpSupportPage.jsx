@@ -33,14 +33,14 @@ export default function HelpSupportPage() {
         <span className="eyebrow">DORKAR CUSTOMER CARE</span>
         <h1>How can we help?</h1>
         <p>Find answers to common questions or tell us what you need help with. Choose a service below to get to the right place.</p>
-        <a className="button primary" href="/contact">Contact support <span aria-hidden="true">→</span></a>
+        <a className="button primary" href="/contact">Contact support</a>
       </div>
       <div className="support-hero-art"><img className="support-hero-image" src={supportArtwork} alt="Dorkar customer support headset illustration"/></div>
     </section>
 
     <section className="company-section support-shortcuts">
       <div className="support-shortcuts-heading"><div className="company-section-heading"><span className="eyebrow">GET HELP WITH</span><h2>Choose a service</h2><p>Jump to the information and tools related to your question.</p></div><div className="support-search" aria-label="Search help topics"><label htmlFor="support-search-input"><span className="support-search-icon" aria-hidden="true"/><input id="support-search-input" type="search" value={searchQuery} onChange={event => setSearchQuery(event.target.value)} placeholder="Search help, e.g. cancel ride, refund, blood donation"/><span className="support-search-count" aria-live="polite">{searchTerm ? `${filteredTopics.length + filteredQuestions.length} results` : 'Search help'}</span></label></div></div>
-      <div className="support-topic-grid">{filteredTopics.map(([image, title, text, href], index) => <a className="support-topic-card" href={href} key={title}><span className={`support-topic-icon topic-image-${topics.findIndex(topic => topic[1] === title)+1}`}><img src={image} alt=""/></span><div><h3>{title}</h3><p>{text}</p></div><b aria-hidden="true">→</b></a>)}</div>
+      <div className="support-topic-grid">{filteredTopics.map(([image, title, text, href], index) => <a className="support-topic-card" href={href} key={title}><span className={`support-topic-icon topic-image-${topics.findIndex(topic => topic[1] === title)+1}`}><img src={image} alt=""/></span><div><h3>{title}</h3><p>{text}</p></div></a>)}</div>
       {searchTerm && filteredTopics.length === 0 && <p className="support-empty-search">No service matches that search. Try another phrase or contact Dorkar Support below.</p>}
     </section>
 
@@ -49,6 +49,6 @@ export default function HelpSupportPage() {
         <div className="support-faq-list">{filteredQuestions.map(([question, answer]) => <details className="support-faq-item" key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}{searchTerm && filteredQuestions.length === 0 && <p className="support-empty-search">No answers found. Send us a support request and include your question.</p>}</div>
     </section>
 
-    <section className="support-contact-strip"><img className="support-contact-art" src={bangladeshScenery} alt=""/><div className="support-contact-copy"><b>Still need a hand?</b><p>For general questions or partnership enquiries, contact the Dorkar team.</p></div><a className="button primary" href="/contact">Contact support <span aria-hidden="true">→</span></a></section>
+    <section className="support-contact-strip"><img className="support-contact-art" src={bangladeshScenery} alt=""/><div className="support-contact-copy"><b>Still need a hand?</b><p>For general questions or partnership enquiries, contact the Dorkar team.</p></div><a className="button primary" href="/contact">Contact support</a></section>
   </div>
 }

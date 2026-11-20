@@ -24,7 +24,7 @@ function Brand() {
     <a className="brand footer-brand" href="/" aria-label="Dorkar home">
       <img className="brand-symbol" src="/D-Logo-transparent.png" alt="" />
       <span>Dorkar</span>
-    </a>
+   </a>
   )
 }
 
@@ -48,8 +48,8 @@ export default function SiteFooter() {
         <div className="footer-contact">
           <h2>Need a hand?</h2>
           <p>Find answers to common questions or send the Dorkar team a support request.</p>
-          <a className="footer-contact-link" href="/support">Visit Help & Support →</a>
-          <a className="footer-contact-link" href="/contact">Contact the Dorkar team →</a>
+          <a className="footer-contact-link" href="/support">Visit Help & Support</a>
+          <a className="footer-contact-link" href="/contact">Contact the Dorkar team</a>
         </div>
       </div>
 

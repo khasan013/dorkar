@@ -134,7 +134,7 @@ export default function UsersPage() {
           </table>
         </div>
 
-        <div className="users-pagination"><span>{loading ? 'Loading customer accounts…' : filteredUsers.length ? `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filteredUsers.length)} of ${numberFormat.format(filteredUsers.length)} users` : 'Showing 0 users'}</span><div><button type="button" aria-label="Previous page" disabled={page <= 1 || loading} onClick={() => setPage(current => Math.max(1, current - 1))}>‹</button><span>Page {page} of {totalPages}</span><button type="button" aria-label="Next page" disabled={page >= totalPages || loading} onClick={() => setPage(current => Math.min(totalPages, current + 1))}>›</button></div></div>
+        <div className="users-pagination"><span>{loading ? 'Loading customer accounts…' : filteredUsers.length ? `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, filteredUsers.length)} of ${numberFormat.format(filteredUsers.length)} users` : 'Showing 0 users'}</span><div><button type="button" aria-label="Previous page" disabled={page <= 1 || loading} onClick={() => setPage(current => Math.max(1, current - 1))}>Previous</button><span>Page {page} of {totalPages}</span><button type="button" aria-label="Next page" disabled={page >= totalPages || loading} onClick={() => setPage(current => Math.min(totalPages, current + 1))}>Next</button></div></div>
       </section>
     </div>
 
