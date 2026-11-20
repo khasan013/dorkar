@@ -1,2 +1,5 @@
-import AdminModulePage from './AdminModulePage'
-export default function ParcelManagementPage() { return <AdminModulePage title="Parcel Management" description="Review parcel bookings, delivery status, and operations."/> }
+import AdminRecordsPage from './AdminRecordsPage'
+
+export default function ParcelManagementPage() {
+  return <AdminRecordsPage title="Parcel Management" description="Review parcel bookings and update shipment request status." source="requests" serviceType="PARCEL" singular="Parcel request"/>
+}
