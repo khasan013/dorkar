@@ -41,6 +41,21 @@ export async function getAdminPartners(accessToken, signal) {
   return adminRequest('/partners', accessToken, signal)
 }
 
+export async function submitPartnerApplication(application) {
+  const response = await fetch(`${API_BASE_URL}/api/v1/partners/applications`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(application),
+  })
+  const result = await response.json().catch(() => null)
+  if (!response.ok || result?.success === false) {
+    const error = new Error(result?.message || `Partner application failed (HTTP ${response.status})`)
+    error.status = response.status
+    throw error
+  }
+  return result?.data
+}
+
 export async function updateAdminPartnerStatus(id, status, accessToken) {
   return adminMutation(`/partners/${encodeURIComponent(id)}/status?status=${encodeURIComponent(status)}`, accessToken, 'PATCH')
 }
