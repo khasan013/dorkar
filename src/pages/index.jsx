@@ -55,10 +55,21 @@ import { readAuthSession, redirectToLogin, saveAuthSession } from '../auth/sessi
 import { canAccessAdminPath, isAdminRole } from '../auth/adminRoles'
 import ChangePasswordPage from './ChangePasswordPage'
 import RestaurantPartnerDashboardPage from './Restaurant/PartnerDashboardPage'
+import RestaurantPartnerWorkspacePage from './Restaurant/RestaurantPartnerWorkspacePage'
 
 const protectedPaths = new Set([
   '/dashboard',
   '/restaurant/dashboard',
+  '/restaurant/orders',
+  '/restaurant/menu',
+  '/restaurant/categories',
+  '/restaurant/promotions',
+  '/restaurant/reviews',
+  '/restaurant/analytics',
+  '/restaurant/payouts',
+  '/restaurant/profile',
+  '/restaurant/staff',
+  '/restaurant/settings',
   '/change-password',
   '/profile',
   '/settings',
@@ -111,6 +122,16 @@ const routes = {
   '/admin/logs': AdminSystemLogsPage,
   '/settings': SettingsPage,
   '/restaurant/dashboard': RestaurantPartnerDashboardPage,
+  '/restaurant/orders': RestaurantPartnerWorkspacePage,
+  '/restaurant/menu': RestaurantPartnerWorkspacePage,
+  '/restaurant/categories': RestaurantPartnerWorkspacePage,
+  '/restaurant/promotions': RestaurantPartnerWorkspacePage,
+  '/restaurant/reviews': RestaurantPartnerWorkspacePage,
+  '/restaurant/analytics': RestaurantPartnerWorkspacePage,
+  '/restaurant/payouts': RestaurantPartnerWorkspacePage,
+  '/restaurant/profile': RestaurantPartnerWorkspacePage,
+  '/restaurant/staff': RestaurantPartnerWorkspacePage,
+  '/restaurant/settings': RestaurantPartnerWorkspacePage,
   '/ride/booking': RideBookingPage,
   '/ride/tracking': RideTrackingPage,
   '/food/restaurants': FoodRestaurantsPage,
@@ -142,7 +163,8 @@ export default function Pages() {
   const path = requestedPath === '/signin' ? '/login' : requestedPath === '/signup' ? '/register' : requestedPath
   const session = readAuthSession()
   const [resolvedUser, setResolvedUser] = useState(session?.user || null)
-  const [partnerTypeResolved, setPartnerTypeResolved] = useState(Boolean(session?.user?.partnerType) || !session || !['/dashboard', '/restaurant/dashboard'].includes(path))
+  const partnerRouteNeedsRefresh = path === '/dashboard' || path.startsWith('/restaurant/')
+  const [partnerTypeResolved, setPartnerTypeResolved] = useState(!partnerRouteNeedsRefresh || !session)
   const isProtected = protectedPaths.has(path) && !session
   const isAdminPath = path === '/admin' || path.startsWith('/admin/')
   const hasAdminRole = isAdminRole(session?.user?.role)
@@ -161,7 +183,7 @@ export default function Pages() {
     if (restaurantOnUserDashboard) window.location.replace('/restaurant/dashboard')
   }, [restaurantOnUserDashboard])
   useEffect(() => {
-    if (!session?.accessToken || partnerTypeResolved || !['/dashboard', '/restaurant/dashboard'].includes(path)) return
+    if (!session?.accessToken || partnerTypeResolved || !partnerRouteNeedsRefresh) return
     const controller = new AbortController()
     const timeout = window.setTimeout(() => controller.abort(), 10000)
     fetch(`${(import.meta.env.VITE_API_BASE_URL || 'https://dorker-backend.onrender.com').trim().replace(/\/$/, '')}/api/v1/users/me`, {
@@ -181,7 +203,7 @@ export default function Pages() {
       setPartnerTypeResolved(true)
     })
     return () => { window.clearTimeout(timeout); controller.abort() }
-  }, [path, partnerTypeResolved, session?.accessToken])
+  }, [path, partnerTypeResolved, partnerRouteNeedsRefresh, session?.accessToken])
   useEffect(() => {
     if (mustChangePassword && path !== '/change-password') window.location.replace('/change-password')
   }, [mustChangePassword, path])
@@ -189,7 +211,7 @@ export default function Pages() {
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
   if (adminOnUserDashboard) return <main className="auth-redirect" role="status">Opening your admin dashboard…</main>
   if (restaurantOnUserDashboard) return <main className="auth-redirect" role="status">Opening your restaurant dashboard…</main>
-  if (!partnerTypeResolved && ['/dashboard', '/restaurant/dashboard'].includes(path)) return <main className="auth-redirect" role="status">Checking your partner dashboard…</main>
+  if (!partnerTypeResolved && (path === '/dashboard' || path.startsWith('/restaurant/'))) return <main className="auth-redirect" role="status">Checking your partner dashboard…</main>
   if (mustChangePassword && path !== '/change-password') return <main className="auth-redirect" role="status">Opening required password update…</main>
   if (path === '/change-password') return <><ChangePasswordPage/><SiteFooter/></>
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
@@ -201,7 +223,7 @@ export default function Pages() {
   const Page = routes[path]
   if (!Page) return <HomePage />
   if (isAdminPath) return <Page />
-  if (path === '/restaurant/dashboard') return <Page />
+  if (path.startsWith('/restaurant/')) return <Page />
   if (path === '/login' || path === '/register') return <><Page /><SiteFooter /></>
   return <DetailedPage><Page /></DetailedPage>
 }

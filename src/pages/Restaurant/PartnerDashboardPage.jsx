@@ -61,17 +61,17 @@ function Icon({ name, size = 20 }) {
 }
 
 const navigation = [
-  { key: 'dashboard', title: 'Dashboard', icon: 'grid', href: '#top' },
-  { key: 'orders', title: 'Orders', icon: 'bag', href: '#orders' },
-  { key: 'menu', title: 'Menu / Items', icon: 'menu', href: '#menu-performance' },
-  { key: 'categories', title: 'Categories', icon: 'layers', href: '#menu-performance' },
-  { key: 'offers', title: 'Promotions & Offers', icon: 'tag', href: '#quick-actions' },
-  { key: 'reviews', title: 'Reviews', icon: 'star', href: '#reviews' },
-  { key: 'analytics', title: 'Analytics', icon: 'chart', href: '#revenue' },
-  { key: 'payouts', title: 'Payouts & Earnings', icon: 'wallet', href: '#revenue' },
-  { key: 'profile', title: 'Restaurant Profile', icon: 'store', href: '/profile' },
-  { key: 'staff', title: 'Staff & Access', icon: 'users', href: '#quick-actions' },
-  { key: 'settings', title: 'Settings', icon: 'settings', href: '/settings' },
+  { key: 'dashboard', title: 'Dashboard', icon: 'grid', href: '/restaurant/dashboard' },
+  { key: 'orders', title: 'Orders', icon: 'bag', href: '/restaurant/orders' },
+  { key: 'menu', title: 'Menu / Items', icon: 'menu', href: '/restaurant/menu' },
+  { key: 'categories', title: 'Categories', icon: 'layers', href: '/restaurant/categories' },
+  { key: 'offers', title: 'Promotions & Offers', icon: 'tag', href: '/restaurant/promotions' },
+  { key: 'reviews', title: 'Reviews', icon: 'star', href: '/restaurant/reviews' },
+  { key: 'analytics', title: 'Analytics', icon: 'chart', href: '/restaurant/analytics' },
+  { key: 'payouts', title: 'Payouts & Earnings', icon: 'wallet', href: '/restaurant/payouts' },
+  { key: 'profile', title: 'Restaurant Profile', icon: 'store', href: '/restaurant/profile' },
+  { key: 'staff', title: 'Staff & Access', icon: 'users', href: '/restaurant/staff' },
+  { key: 'settings', title: 'Settings', icon: 'settings', href: '/restaurant/settings' },
 ]
 
 export default function PartnerDashboardPage() {
@@ -176,7 +176,7 @@ export default function PartnerDashboardPage() {
           <button className="restaurant-account-trigger" type="button" aria-expanded={accountOpen} onClick={() => setAccountOpen(open => !open)}>
             <span className="restaurant-avatar">{initials}</span><span className="restaurant-account-label"><b>{restaurantName}</b><small>Restaurant Admin</small></span><span className="restaurant-chevron">⌄</span>
           </button>
-          {accountOpen && <div className="restaurant-account-menu"><b>{restaurantName}</b><small>{session?.user?.email || session?.user?.phone}</small><a href="/restaurant/dashboard">Restaurant dashboard</a><a href="/profile">Restaurant profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
+          {accountOpen && <div className="restaurant-account-menu"><b>{restaurantName}</b><small>{session?.user?.email || session?.user?.phone}</small><a href="/restaurant/dashboard">Restaurant dashboard</a><a href="/restaurant/profile">Restaurant profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
         </div>
       </header>
 
@@ -218,7 +218,7 @@ export default function PartnerDashboardPage() {
 
         <div className="restaurant-overview-grid">
           <section className="restaurant-panel restaurant-orders-panel" id="orders">
-            <PanelHeading icon="bag" title="Orders Overview" subtitle="Recent orders for your restaurant" action={<a href="#orders-list">View all <Icon name="arrow" size={15}/></a>}/>
+            <PanelHeading icon="bag" title="Orders Overview" subtitle="Recent orders for your restaurant" action={<a href="/restaurant/orders">View all <Icon name="arrow" size={15}/></a>}/>
             <div className="restaurant-order-tools"><div className="restaurant-order-tabs" role="tablist" aria-label="Filter orders">{[['ALL','All'],['NEW','New'],['IN_PROGRESS','In progress'],['COMPLETED','Completed']].map(([key,label])=><button type="button" role="tab" aria-selected={filter===key} className={filter===key?'active':''} key={key} onClick={() => setFilter(key)}>{label}{key==='NEW' && data?.pendingOrders>0 && <span>{data.pendingOrders}</span>}</button>)}</div><button className="restaurant-refresh" type="button" onClick={() => loadDashboard(undefined,true)} disabled={refreshing} aria-label="Refresh orders"><Icon name="refresh" size={16}/></button></div>
             <div className="restaurant-order-list" id="orders-list">
               {loading ? <ListLoading/> : orders.length ? orders.map(order => <OrderRow key={order.id} order={order} disabled={!isApproved} onUpdate={changeOrderStatus}/>) : <EmptyState icon="bag" title={filter==='ALL'?'No orders yet':'No orders in this status'} text={filter==='ALL'?'New orders will appear here as customers place them.':'Try another order filter.'}/>}
@@ -246,19 +246,19 @@ export default function PartnerDashboardPage() {
 
         <div className="restaurant-lower-grid">
           <section className="restaurant-panel restaurant-menu-panel" id="menu-performance">
-            <PanelHeading icon="menu" title="Menu Performance" subtitle="Items ordered during the selected period" action={<a href="#menu-performance">Menu items <Icon name="arrow" size={15}/></a>}/>
+            <PanelHeading icon="menu" title="Menu Performance" subtitle="Items ordered during the selected period" action={<a href="/restaurant/menu">Menu items <Icon name="arrow" size={15}/></a>}/>
             {loading ? <ListLoading/> : data?.popularItems?.length ? <div className="restaurant-item-list">{data.popularItems.map((item,index)=><article key={item.slug}><span className="restaurant-item-rank">{index+1}</span>{item.imageUrl ? <img src={item.imageUrl} alt=""/> : <span className="restaurant-item-image"><Icon name="menu" size={19}/></span>}<div className="restaurant-item-name"><b>{item.name}</b><small>{item.orderCount} {item.orderCount===1?'order':'orders'} in this period</small></div><strong>{money(item.price)}</strong><span className="restaurant-item-availability"><i className={item.available?'available':'unavailable'}/>{item.available?'Available':'Unavailable'}</span></article>)}</div> : <EmptyState icon="menu" title="Menu insights will appear here" text="Once your menu receives orders, you’ll see item performance here."/>}
             <div className="restaurant-menu-summary"><span>{loading?'—':data?.menuItemCount ?? 0} menu items</span><span>{loading?'—':data?.availableItemCount ?? 0} available</span></div>
           </section>
 
           <section className="restaurant-panel restaurant-quick-panel" id="quick-actions">
             <PanelHeading icon="plus" title="Quick Actions" subtitle="Shortcuts for your restaurant"/>
-            <div className="restaurant-quick-grid"><a href="#menu-performance" className="tint-red"><Icon name="plus" size={23}/><b>Menu performance</b><small>Review your items</small></a><a href="#orders" className="tint-blue"><Icon name="bag" size={23}/><b>View orders</b><small>See incoming orders</small></a><a href="/profile" className="tint-purple"><Icon name="store" size={23}/><b>Update profile</b><small>Restaurant details</small></a><a href="/support" className="tint-green"><Icon name="help" size={23}/><b>Get support</b><small>Talk to Dorkar</small></a></div>
+            <div className="restaurant-quick-grid"><a href="/restaurant/menu" className="tint-red"><Icon name="plus" size={23}/><b>Manage menu</b><small>Add and update items</small></a><a href="/restaurant/orders" className="tint-blue"><Icon name="bag" size={23}/><b>View orders</b><small>See incoming orders</small></a><a href="/restaurant/profile" className="tint-purple"><Icon name="store" size={23}/><b>Update profile</b><small>Restaurant details</small></a><a href="/restaurant/promotions" className="tint-green"><Icon name="tag" size={23}/><b>Create offer</b><small>Promote your food</small></a></div>
           </section>
 
           <section className="restaurant-promo-panel">
             <img src={partnerBanner} alt="Restaurant partners growing with Dorkar"/>
-            <div className="restaurant-promo-copy"><span>GROW WITH DORKAR</span><h2>More ways to grow your restaurant</h2><p>Keep your menu current and give customers a great experience.</p><a href="#menu-performance">Explore your performance <Icon name="arrow" size={15}/></a></div>
+            <div className="restaurant-promo-copy"><span>GROW WITH DORKAR</span><h2>More ways to grow your restaurant</h2><p>Keep your menu current and give customers a great experience.</p><a href="/restaurant/promotions">Manage food offers <Icon name="arrow" size={15}/></a></div>
           </section>
         </div>
         <footer className="restaurant-page-footer"><span>© {new Date().getFullYear()} Dorkar Restaurant Partner</span><a href="/terms">Partner terms</a><a href="/support">Support</a></footer>
