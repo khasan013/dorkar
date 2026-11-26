@@ -13,7 +13,7 @@ import bloodArtwork from '../assets/blood-donation.png'
 import downloadPhones from '../assets/BangladeshNavigationandFoodApps-transparent.png'
 import googlePlayIcon from '../assets/Google-Play-Icon.png'
 import AuthForm from '../auth/AuthForm'
-import { readAuthSession, signOut } from '../auth/session'
+import { readAuthSession, saveAuthSession, signOut } from '../auth/session'
 import OffersBannerCarousel from '../components/home/OffersBannerCarousel'
 const pages = [  ['Home', '/', 'Home'], ['Ride Sharing', '/ride', 'Services'], ['Food Delivery', '/food', 'Services'], ['Parcel Delivery', '/parcel', 'Services'], ['Blood Donation', '/blood', 'Services'],  ['Login', '/login', 'Account'], ['Register', '/register', 'Account'], ['User Dashboard', '/dashboard', 'Account'], ['Profile', '/profile', 'Account'], ['Ride Booking', '/ride/booking', 'Ride'], ['Ride Tracking', '/ride/tracking', 'Ride'],  ['Food Restaurants', '/food/restaurants', 'Food'], ['Food Details', '/food/details', 'Food'], ['Cart', '/cart', 'Food'], ['Checkout', '/checkout', 'Food'], ['Order Tracking', '/orders/tracking', 'Food'], ['Parcel Booking', '/parcel/booking', 'Parcel'], ['Parcel Tracking', '/parcel/tracking', 'Parcel'],  ['Blood Donor Search', '/blood/donors', 'Blood'], ['Blood Donation Request', '/blood/request', 'Blood'], ['Donor Profile', '/blood/donor-profile', 'Blood'], ['Payment', '/payment', 'Account'], ['Notifications', '/notifications', 'Account'], ['Ride History', '/ride/history', 'Account'], ['Order History', '/orders/history', 'Account'], ['Help & Support', '/support', 'Info'], ['About Us', '/about', 'Info'], ['Contact Us', '/contact', 'Info'], ['Partner Registration', '/partner', 'Info'], ['Terms & Conditions', '/terms', 'Info'], ['Privacy Policy', '/privacy', 'Info'],]
 const services = [  { title:'Ride Sharing', desc:'Book a ride quickly, safely and at a fair price.', icon:'ride', art:'car', tint:'pink', href:'/ride' },  { title:'Food Delivery', desc:'Your favorite meals from top restaurants.', icon:'food', art:'burger', tint:'orange', href:'/food' },  { title:'Parcel Delivery', desc:'Send and receive parcels across the city easily.', icon:'parcel', art:'parcel', tint:'blue', href:'/parcel' },  { title:'Blood Donor', desc:'Find blood donors or register as a donor to save lives.', icon:'blood', art:'blood', tint:'pink', href:'/blood' },]
@@ -36,6 +36,14 @@ function Header(){
       window.removeEventListener('dorkar-auth-change',syncSession)
     }
   },[])
+  useEffect(()=>{
+    if(!session?.accessToken||Object.prototype.hasOwnProperty.call(session.user||{},'partnerType'))return
+    const controller=new AbortController()
+    fetch(`${(import.meta.env.VITE_API_BASE_URL||'https://dorker-backend.onrender.com').trim().replace(/\/$/,'')}/api/v1/users/me`,{headers:{Accept:'application/json',Authorization:`Bearer ${session.accessToken}`},signal:controller.signal})
+      .then(async response=>{const result=await response.json().catch(()=>null);if(!response.ok||result?.success===false||!result?.data)return;saveAuthSession({...session,user:result.data})})
+      .catch(()=>{})
+    return ()=>controller.abort()
+  },[session?.accessToken])
   const pathname=window.location.pathname.replace(/\/+$/,'')||'/'
   const isHome=pathname==='/'
   const isServices=pathname==='/services'||['/ride','/food','/parcel','/blood'].some(route=>pathname===route||pathname.startsWith(`${route}/`))
@@ -45,7 +53,7 @@ function Header(){
   const adminUser=['ADMIN','SUPER_ADMIN'].includes(String(session?.user?.role||'').toUpperCase())
   const restaurantPartner=String(session?.user?.partnerType||'').toUpperCase()==='RESTAURANT'
   const dashboardPath=adminUser?'/admin':restaurantPartner?'/restaurant/dashboard':'/dashboard'
-  const dashboardLabel=adminUser?'Admin dashboard':restaurantPartner?'Restaurant dashboard':'User dashboard'
+  const dashboardLabel=adminUser?'Admin dashboard':restaurantPartner?'Restaurant dashboard':Object.prototype.hasOwnProperty.call(session?.user||{},'partnerType')?'User dashboard':'Dashboard'
   const profileName=session?.user?.name||'Your account'
   const profileImage=session?.user?.avatarUrl||session?.user?.profileImageUrl
   return <header className="header"><div className="nav-wrap"><Brand/><nav className={open?'nav open':'nav'} aria-label="Main navigation">
