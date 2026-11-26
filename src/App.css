@@ -470,3 +470,28 @@ body:has(.auth-layout){background:radial-gradient(ellipse at 7% 15%,#fff0f3,tran
 @media(max-width:1050px){.footer-main{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:25px}.footer-intro,.footer-contact{grid-column:1/-1}.footer-contact{border-left:0;padding-left:0}}
 
 .dashboard-page .profile-avatar img{width:100%;height:100%;border-radius:inherit;object-fit:cover}
+
+/* Site-wide page shells: fill the viewport like the dashboard workspaces. */
+.header{width:100%}
+.nav-wrap{width:100%;max-width:none;padding-inline:clamp(18px,3vw,56px)}
+.hero-inner{width:100%;max-width:none;padding-inline:clamp(18px,4vw,72px)}
+.section-shell{width:100%;max-width:none;margin-inline:0;padding-inline:clamp(18px,3vw,56px)}
+.services.section-shell{padding-top:10px}
+.app-main{width:100%;min-width:0}
+.app-main>.app-content,
+.app-main>.app-content:has(.partner-page),
+.app-main>.app-content:has(.how-page),
+.app-main>.app-content:has(.profile-page),
+.app-main>.app-content:has(.payment-page){width:100%;max-width:none;min-width:0;flex:1 1 100%;margin:0;padding:clamp(20px,2.5vw,42px) clamp(18px,3vw,56px) 60px}
+.site-footer{padding-left:clamp(18px,3vw,56px);padding-right:clamp(18px,3vw,56px)}
+@media(max-width:767px){
+  .nav-wrap{padding-inline:15px}
+  .hero-inner{padding-left:18px;padding-right:18px}
+  .section-shell{padding-left:16px;padding-right:16px}
+  .app-main>.app-content,
+  .app-main>.app-content:has(.partner-page),
+  .app-main>.app-content:has(.how-page),
+  .app-main>.app-content:has(.profile-page),
+  .app-main>.app-content:has(.payment-page){padding:18px 15px 34px}
+  .site-footer{padding-left:17px;padding-right:17px}
+}
