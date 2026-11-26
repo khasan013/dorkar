@@ -36,6 +36,7 @@ export default function AdminRolesPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [formType, setFormType] = useState('')
+  const [formError, setFormError] = useState('')
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [pendingStatus, setPendingStatus] = useState(null)
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
@@ -73,6 +74,10 @@ export default function AdminRolesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    setFormError('')
+  }, [formType])
+
   const activeTab = partnerTabs.find(item => item.id === tab)
   const selectedPartners = tab === 'roles' ? [] : partners.filter(item => String(item.partnerType || '').toUpperCase() === activeTab?.type)
   const cities = [...new Set(selectedPartners.map(item => String(item.location || '').split(',').at(-1).trim()).filter(Boolean))].sort()
@@ -98,6 +103,7 @@ export default function AdminRolesPage() {
 
   const submitApplication = async event => {
     event.preventDefault()
+    setFormError('')
     const form = event.currentTarget
     if (!form.reportValidity()) return
     const data = new FormData(form)
@@ -107,17 +113,17 @@ export default function AdminRolesPage() {
     const phoneDigits = phone.replace(/\D/g, '')
     const normalizedPhone = phone.startsWith('+880') ? '+' + phoneDigits : phoneDigits.startsWith('880') ? '+' + phoneDigits : phoneDigits
     if (!/^(\+?88)?01[3-9]\d{8}$/.test(normalizedPhone)) {
-      setError('Enter a valid Bangladesh mobile number.')
+      setFormError('Enter a valid Bangladesh mobile number, such as 01712345678.')
       return
     }
     const temporaryPassword = String(data.get('temporaryPassword') || '')
     const confirmPassword = String(data.get('confirmPassword') || '')
     if (temporaryPassword.length < 8) {
-      setError('Set a temporary password with at least 8 characters.')
+      setFormError('Set a temporary password with at least 8 characters.')
       return
     }
     if (temporaryPassword !== confirmPassword) {
-      setError('The temporary passwords do not match.')
+      setFormError('The temporary passwords do not match.')
       return
     }
     setSaving(true)
@@ -132,12 +138,17 @@ export default function AdminRolesPage() {
         location: String(data.get('location') || '').trim(),
         temporaryPassword,
       }, session?.accessToken)
-      setFormType('')
-      setNotice('Partner account created. Share the temporary password securely; they must change it after signing in.')
+      if (!created?.userId) {
+        throw new Error('The backend did not confirm a partner login account. Deploy the latest backend and try again.')
+      }
       await loadPageData()
+      setFormType('')
+      setNotice(`${partnerTypeNames[formType]} account created for ${name}. Share the temporary password securely; it must be changed after first sign-in.`)
       if (created?.id) setTab(formType === 'RESTAURANT' ? 'restaurants' : formType === 'DELIVERY' ? 'riders' : 'drivers')
     } catch (requestError) {
-      setError(requestError.message || 'Partner application could not be submitted.')
+      setFormError(requestError instanceof TypeError
+        ? 'Could not connect to the backend. Check your connection and try again.'
+        : requestError.message || 'Could not create the partner account. Check the details and try again.')
     } finally { setSaving(false) }
   }
 
@@ -221,7 +232,7 @@ export default function AdminRolesPage() {
 
     {roleDialogOpen && <div className="admin-access-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget && !saving) setRoleDialogOpen(false) }}><section className="admin-access-modal" role="dialog" aria-modal="true" aria-labelledby="admin-role-dialog-title"><button className="admin-access-modal-close" type="button" onClick={() => setRoleDialogOpen(false)} aria-label="Close role form">×</button><span className="admin-access-modal-icon"><AdminIcon name="shield" size={20}/></span><span className="admin-access-modal-kicker">SUPER ADMIN ACCESS</span><h2 id="admin-role-dialog-title">Assign administrator role</h2><p>Choose an existing account and give it the access required for its work. Role changes are enforced by the backend.</p><form className="admin-role-form" onSubmit={saveAdminRole}><label className="full">Account<select required value={roleTargetId} onChange={event => setRoleTargetId(event.target.value)}><option value="">Select a user or administrator</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.name} · {account.phone} · {adminRoleLabel(account.role)}</option>)}</select></label><label className="full">Role<select required value={roleTargetValue} onChange={event => setRoleTargetValue(event.target.value)}><option value="">Select a role</option><option value="USER">Customer (remove admin access)</option>{adminRoleDefinitions.map(role => <option key={role.value} value={role.value}>{role.label}</option>)}</select></label>{roleTargetValue && <div className="admin-access-form-note"><AdminIcon name="shield" size={15}/>{adminRoleDefinitions.find(role => role.value === roleTargetValue)?.scope || 'This account will no longer have administrator access.'}</div>}<button type="submit" disabled={saving || !isSuperAdmin}>{saving ? 'Saving role…' : 'Save role'}</button></form></section></div>}
 
-    {formType && <div className="admin-access-modal-backdrop" role="presentation" onMouseDown={event => {if(event.target===event.currentTarget&&!saving)setFormType('')}}><section className="admin-access-modal" role="dialog" aria-modal="true" aria-labelledby="admin-access-form-title"><button className="admin-access-modal-close" type="button" onClick={() => setFormType('')} aria-label="Close">×</button><span className="admin-access-modal-icon"><AdminIcon name={formType === 'RESTAURANT' ? 'food' : formType === 'DELIVERY' ? 'driver' : 'car'} size={20}/></span><span className="admin-access-modal-kicker">PARTNER ONBOARDING</span><h2 id="admin-access-form-title">Add {partnerTypeNames[formType]}</h2><p>Creates a partner login and a pending application. They must replace the temporary password at first sign-in.</p><form onSubmit={submitApplication}><label>{formType === 'RESTAURANT' ? 'Owner / contact name' : 'Full name'}<input name="name" required maxLength="140" autoComplete="name" placeholder="Full name"/></label><label>{formType === 'RESTAURANT' ? 'Restaurant name' : 'Partner name'}<input name="businessName" required maxLength="160" placeholder={formType === 'RESTAURANT' ? 'Restaurant or brand name' : 'Name shown in partner application'}/></label><label>Phone number<input name="phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX"/></label><label>Email address (optional)<input name="email" type="email" maxLength="190" autoComplete="email" placeholder="name@example.com"/></label><label className="full">City and service area<input name="location" required maxLength="240" placeholder="Gulshan, Dhaka"/></label><label>Temporary password<input name="temporaryPassword" type="password" required minLength="8" maxLength="72" autoComplete="new-password" placeholder="At least 8 characters"/></label><label>Confirm temporary password<input name="confirmPassword" type="password" required minLength="8" maxLength="72" autoComplete="new-password" placeholder="Enter it again"/></label><div className="admin-access-form-note"><AdminIcon name="shield" size={15}/>Phone and email must not already belong to an account. Share the temporary password directly with the partner.</div><button type="submit" disabled={saving}>{saving ? 'Creating account…' : 'Create partner account'}</button></form></section></div>}
+    {formType && <div className="admin-access-modal-backdrop" role="presentation" onMouseDown={event => {if(event.target===event.currentTarget&&!saving)setFormType('')}}><section className="admin-access-modal" role="dialog" aria-modal="true" aria-labelledby="admin-access-form-title"><button className="admin-access-modal-close" type="button" onClick={() => setFormType('')} aria-label="Close">×</button><span className="admin-access-modal-icon"><AdminIcon name={formType === 'RESTAURANT' ? 'food' : formType === 'DELIVERY' ? 'driver' : 'car'} size={20}/></span><span className="admin-access-modal-kicker">PARTNER ONBOARDING</span><h2 id="admin-access-form-title">Add {partnerTypeNames[formType]}</h2><p>Creates a partner login and a pending application. They must replace the temporary password at first sign-in.</p><form onSubmit={submitApplication}><label>{formType === 'RESTAURANT' ? 'Owner / contact name' : 'Full name'}<input name="name" required maxLength="140" autoComplete="name" placeholder="Full name"/></label><label>{formType === 'RESTAURANT' ? 'Restaurant name' : 'Partner name'}<input name="businessName" required maxLength="160" placeholder={formType === 'RESTAURANT' ? 'Restaurant or brand name' : 'Name shown in partner application'}/></label><label>Phone number<input name="phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX"/></label><label>Email address (optional)<input name="email" type="email" maxLength="190" autoComplete="email" placeholder="name@example.com"/></label><label className="full">City and service area<input name="location" required maxLength="240" placeholder="Gulshan, Dhaka"/></label><label>Temporary password<input name="temporaryPassword" type="password" required minLength="8" maxLength="72" autoComplete="new-password" placeholder="At least 8 characters"/></label><label>Confirm temporary password<input name="confirmPassword" type="password" required minLength="8" maxLength="72" autoComplete="new-password" placeholder="Enter it again"/></label><div className="admin-access-form-note"><AdminIcon name="shield" size={15}/>Phone and email must not already belong to an account. Share the temporary password directly with the partner.</div>{formError && <div className="admin-access-form-error" role="alert" aria-live="assertive"><AdminIcon name="shield" size={15}/><span>{formError}</span></div>}<button type="submit" disabled={saving}>{saving ? 'Creating account…' : 'Create partner account'}</button></form></section></div>}
 
     {selectedRecord && <div className="admin-access-modal-backdrop" role="presentation" onMouseDown={event => {if(event.target===event.currentTarget)setSelectedRecord(null)}}><section className="admin-access-modal admin-access-detail-modal" role="dialog" aria-modal="true" aria-labelledby="admin-access-detail-title"><button className="admin-access-modal-close" type="button" onClick={() => setSelectedRecord(null)} aria-label="Close details">×</button><span className="admin-access-modal-kicker">PARTNER APPLICATION #{selectedRecord.id}</span><h2 id="admin-access-detail-title">{selectedRecord.businessName || partnerTypeNames[String(selectedRecord.partnerType || '').toUpperCase()]}</h2><dl><div><dt>Applicant</dt><dd>{selectedRecord.name || '—'}</dd></div><div><dt>Type</dt><dd>{partnerTypeNames[String(selectedRecord.partnerType || '').toUpperCase()] || selectedRecord.partnerType}</dd></div><div><dt>Phone</dt><dd>{selectedRecord.phone || '—'}</dd></div><div><dt>Email</dt><dd>{selectedRecord.email || 'Not provided'}</dd></div><div><dt>Location</dt><dd>{selectedRecord.location || '—'}</dd></div><div><dt>Submitted</dt><dd>{dateLabel(selectedRecord.createdAt)}</dd></div><div><dt>Review status</dt><dd>{statusLabel(selectedRecord.status)}</dd></div></dl><button className="admin-access-detail-done" type="button" onClick={() => setSelectedRecord(null)}>Close</button></section></div>}
 

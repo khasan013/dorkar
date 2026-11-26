@@ -54,9 +54,11 @@ import { useEffect } from 'react'
 import { readAuthSession, redirectToLogin } from '../auth/session'
 import { canAccessAdminPath, isAdminRole } from '../auth/adminRoles'
 import ChangePasswordPage from './ChangePasswordPage'
+import RestaurantPartnerDashboardPage from './Restaurant/PartnerDashboardPage'
 
 const protectedPaths = new Set([
   '/dashboard',
+  '/restaurant/dashboard',
   '/change-password',
   '/profile',
   '/settings',
@@ -108,6 +110,7 @@ const routes = {
   '/admin/access': AdminRolesPage,
   '/admin/logs': AdminSystemLogsPage,
   '/settings': SettingsPage,
+  '/restaurant/dashboard': RestaurantPartnerDashboardPage,
   '/ride/booking': RideBookingPage,
   '/ride/tracking': RideTrackingPage,
   '/food/restaurants': FoodRestaurantsPage,
@@ -144,6 +147,8 @@ export default function Pages() {
   const hasAdminPageAccess = hasAdminRole && canAccessAdminPath(session?.user?.role, path)
   const adminOnUserDashboard = path === '/dashboard' && hasAdminRole
   const mustChangePassword = Boolean(session?.user?.mustChangePassword)
+  const restaurantOnUserDashboard = path === '/dashboard' && String(session?.user?.partnerType || '').toUpperCase() === 'RESTAURANT'
+  const restaurantRouteDenied = path.startsWith('/restaurant/') && String(session?.user?.partnerType || '').toUpperCase() !== 'RESTAURANT'
   useEffect(() => {
     if (isProtected) redirectToLogin()
   }, [isProtected])
@@ -151,21 +156,27 @@ export default function Pages() {
     if (adminOnUserDashboard) window.location.replace('/admin')
   }, [adminOnUserDashboard])
   useEffect(() => {
+    if (restaurantOnUserDashboard) window.location.replace('/restaurant/dashboard')
+  }, [restaurantOnUserDashboard])
+  useEffect(() => {
     if (mustChangePassword && path !== '/change-password') window.location.replace('/change-password')
   }, [mustChangePassword, path])
 
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
   if (adminOnUserDashboard) return <main className="auth-redirect" role="status">Opening your admin dashboard…</main>
+  if (restaurantOnUserDashboard) return <main className="auth-redirect" role="status">Opening your restaurant dashboard…</main>
   if (mustChangePassword && path !== '/change-password') return <main className="auth-redirect" role="status">Opening required password update…</main>
   if (path === '/change-password') return <><ChangePasswordPage/><SiteFooter/></>
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (isAdminPath && !hasAdminPageAccess) return <main className="admin-denied"><div><span>403</span><h1>Admin role does not allow this area</h1><p>Your account can only manage the modules assigned to its role. Contact a Super Admin if you need access.</p><a href="/admin">Return to your admin dashboard</a></div></main>
+  if (restaurantRouteDenied) return <main className="admin-denied"><div><span>403</span><h1>Restaurant partner access required</h1><p>Sign in with the restaurant account created by your Dorkar administrator.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (path === '/') return <HomePage />
   if (path === '/dashboard') return <><UserDashboardPage /><SiteFooter /></>
   if (path === '/profile') return <DetailedPage><ProfilePage /></DetailedPage>
   const Page = routes[path]
   if (!Page) return <HomePage />
   if (isAdminPath) return <Page />
+  if (path === '/restaurant/dashboard') return <Page />
   if (path === '/login' || path === '/register') return <><Page /><SiteFooter /></>
   return <DetailedPage><Page /></DetailedPage>
 }

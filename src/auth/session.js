@@ -41,6 +41,10 @@ export function getPostLoginPath(user) {
     return safeRequestedPath && (requestedPath === '/admin' || requestedPath.startsWith('/admin/')) ? requestedPath : '/admin'
   }
 
+  if (String(user?.partnerType || '').toUpperCase() === 'RESTAURANT') {
+    return '/restaurant/dashboard'
+  }
+
   if (safeRequestedPath) {
     return requestedPath
   }
