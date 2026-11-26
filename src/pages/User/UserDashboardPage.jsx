@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import dorkarLogo from '../assets/D-Logo.png'
-import heroScenery from '../assets/Hero-bg-illlustration.png'
-import scooter from '../assets/signinpage.png'
-import { readAuthSession, signOut } from '../auth/session'
+import dorkarLogo from '../../assets/D-Logo.png'
+import heroScenery from '../../assets/Hero-bg-illlustration.png'
+import scooter from '../../assets/signinpage.png'
+import { readAuthSession, signOut } from '../../auth/session'
 
 const services = [
   { name: 'Ride Sharing', description: 'Book a ride quickly and at a fair price.', icon: 'car', color: 'ride', href: '/ride' },

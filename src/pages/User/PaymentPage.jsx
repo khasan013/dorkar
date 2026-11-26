@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import walletIllustration from '../assets/Wallet.png'
+import walletIllustration from '../../assets/Wallet.png'
 
 const methods = [
   { id: 'card', title: 'Credit / Debit Card', description: 'Visa, Mastercard, AMEX accepted', icon: 'card' },

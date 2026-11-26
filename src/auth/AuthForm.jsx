@@ -78,6 +78,10 @@ export default function AuthForm({ path }) {
       }
 
       saveAuthSession(auth)
+      if (auth.user.mustChangePassword) {
+        window.location.replace('/change-password')
+        return
+      }
       window.location.replace(getPostLoginPath(auth.user))
     } catch (requestError) {
       setError(requestError instanceof TypeError

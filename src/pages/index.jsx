@@ -1,30 +1,30 @@
 import HomePage from './HomePage'
-import RideSharingPage from './RideSharingPage'
-import FoodDeliveryPage from './FoodDeliveryPage'
-import ParcelDeliveryPage from './ParcelDeliveryPage'
-import BloodDonationPage from './BloodDonationPage'
+import RideSharingPage from './ride-shareing/RideSharingPage'
+import FoodDeliveryPage from './Food/FoodDeliveryPage'
+import ParcelDeliveryPage from './parcel/ParcelDeliveryPage'
+import BloodDonationPage from './Blood/BloodDonationPage'
 import SignInPage from './SignInPage'
 import SignUpPage from './SignUpPage'
-import UserDashboardPage from './UserDashboardPage'
-import ProfilePage from './ProfilePage'
-import SettingsPage from './SettingsPage'
-import RideBookingPage from './RideBookingPage'
-import RideTrackingPage from './RideTrackingPage'
-import FoodRestaurantsPage from './FoodRestaurantsPage'
-import FoodDetailsPage from './FoodDetailsPage'
-import CartPage from './CartPage'
-import CheckoutPage from './CheckoutPage'
-import OrderTrackingPage from './OrderTrackingPage'
-import ParcelBookingPage from './ParcelBookingPage'
-import ParcelTrackingPage from './ParcelTrackingPage'
-import BloodDonorSearchPage from './BloodDonorSearchPage'
-import BloodDonationRequestPage from './BloodDonationRequestPage'
-import DonorProfilePage from './DonorProfilePage'
-import PaymentPage from './PaymentPage'
-import NotificationsPage from './NotificationsPage'
-import RideHistoryPage from './RideHistoryPage'
-import OrderHistoryPage from './OrderHistoryPage'
-import ActivityPage from './ActivityPage'
+import UserDashboardPage from './User/UserDashboardPage'
+import ProfilePage from './User/ProfilePage'
+import SettingsPage from './User/SettingsPage'
+import RideBookingPage from './ride-shareing/RideBookingPage'
+import RideTrackingPage from './ride-shareing/RideTrackingPage'
+import FoodRestaurantsPage from './Restaurant/FoodRestaurantsPage'
+import FoodDetailsPage from './Food/FoodDetailsPage'
+import CartPage from './Food/CartPage'
+import CheckoutPage from './Food/CheckoutPage'
+import OrderTrackingPage from './Food/OrderTrackingPage'
+import ParcelBookingPage from './parcel/ParcelBookingPage'
+import ParcelTrackingPage from './parcel/ParcelTrackingPage'
+import BloodDonorSearchPage from './Blood/BloodDonorSearchPage'
+import BloodDonationRequestPage from './Blood/BloodDonationRequestPage'
+import DonorProfilePage from './Blood/DonorProfilePage'
+import PaymentPage from './User/PaymentPage'
+import NotificationsPage from './User/NotificationsPage'
+import RideHistoryPage from './User/RideHistoryPage'
+import OrderHistoryPage from './User/OrderHistoryPage'
+import ActivityPage from './User/ActivityPage'
 import HelpSupportPage from './HelpSupportPage'
 import AboutUsPage from './AboutUsPage'
 import ContactUsPage from './ContactUsPage'
@@ -53,9 +53,11 @@ import SiteFooter from './SiteFooter'
 import { useEffect } from 'react'
 import { readAuthSession, redirectToLogin } from '../auth/session'
 import { canAccessAdminPath, isAdminRole } from '../auth/adminRoles'
+import ChangePasswordPage from './ChangePasswordPage'
 
 const protectedPaths = new Set([
   '/dashboard',
+  '/change-password',
   '/profile',
   '/settings',
   '/payment',
@@ -141,15 +143,21 @@ export default function Pages() {
   const hasAdminRole = isAdminRole(session?.user?.role)
   const hasAdminPageAccess = hasAdminRole && canAccessAdminPath(session?.user?.role, path)
   const adminOnUserDashboard = path === '/dashboard' && hasAdminRole
+  const mustChangePassword = Boolean(session?.user?.mustChangePassword)
   useEffect(() => {
     if (isProtected) redirectToLogin()
   }, [isProtected])
   useEffect(() => {
     if (adminOnUserDashboard) window.location.replace('/admin')
   }, [adminOnUserDashboard])
+  useEffect(() => {
+    if (mustChangePassword && path !== '/change-password') window.location.replace('/change-password')
+  }, [mustChangePassword, path])
 
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
   if (adminOnUserDashboard) return <main className="auth-redirect" role="status">Opening your admin dashboard…</main>
+  if (mustChangePassword && path !== '/change-password') return <main className="auth-redirect" role="status">Opening required password update…</main>
+  if (path === '/change-password') return <><ChangePasswordPage/><SiteFooter/></>
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (isAdminPath && !hasAdminPageAccess) return <main className="admin-denied"><div><span>403</span><h1>Admin role does not allow this area</h1><p>Your account can only manage the modules assigned to its role. Contact a Super Admin if you need access.</p><a href="/admin">Return to your admin dashboard</a></div></main>
   if (path === '/') return <HomePage />

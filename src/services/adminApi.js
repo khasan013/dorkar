@@ -53,6 +53,10 @@ export async function getAdminPartners(accessToken, signal) {
   return adminRequest('/partners', accessToken, signal)
 }
 
+export async function createAdminPartnerApplication(application, accessToken) {
+  return adminMutation('/partners', accessToken, 'POST', application)
+}
+
 export async function submitPartnerApplication(application) {
   const response = await fetch(`${API_BASE_URL}/api/v1/partners/applications`, {
     method: 'POST',

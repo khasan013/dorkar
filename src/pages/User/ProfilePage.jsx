@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { readAuthSession, saveAuthSession, signOut } from '../auth/session'
-import { isAdminRole } from '../auth/adminRoles'
-import { createSavedLocation, deleteSavedLocation, getMyProfile, getSavedLocations, updateMyProfile, updateSavedLocation, uploadMyProfilePhoto } from '../services/profileApi'
-import heroScenery from '../assets/Hero-bg-illlustration.png'
+import { readAuthSession, saveAuthSession, signOut } from '../../auth/session'
+import { isAdminRole } from '../../auth/adminRoles'
+import { createSavedLocation, deleteSavedLocation, getMyProfile, getSavedLocations, updateMyProfile, updateSavedLocation, uploadMyProfilePhoto } from '../../services/profileApi'
+import heroScenery from '../../assets/Hero-bg-illlustration.png'
 import './ProfilePage.css'
 
 const sessionProfile = (user = {}) => ({ name: user.name || '', phone: user.phone || '', email: user.email || '', birthday: user.dateOfBirth || '', area: user.preferredArea || '' })

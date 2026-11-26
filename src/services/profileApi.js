@@ -31,6 +31,13 @@ export function updateMyProfile(profile, token) {
   return profileRequest('/api/v1/users/me', token, { method: 'PATCH', body: profile })
 }
 
+export function changeMyPassword(currentPassword, newPassword, token) {
+  return profileRequest('/api/v1/users/me/password', token, {
+    method: 'PATCH',
+    body: { currentPassword, newPassword },
+  })
+}
+
 export async function uploadMyProfilePhoto(file, token) {
   const body = new FormData()
   body.append('file', file)
