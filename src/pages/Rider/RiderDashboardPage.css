@@ -79,3 +79,50 @@
 @media(max-width:760px){.rider-portal{display:block}.rider-sidebar{position:fixed;z-index:45;left:0;top:0;width:min(300px,86vw);height:100dvh;padding:20px 16px;transform:translateX(-105%);transition:transform .2s ease;box-shadow:15px 0 40px #14172520}.rider-sidebar.is-open{transform:translateX(0)}.rider-scrim{position:fixed;z-index:40;inset:0;display:block;border:0;background:#17172575}.rider-main{padding:16px 14px 14px}.rider-header{align-items:flex-start;padding-bottom:15px}.rider-header-title{align-items:flex-start}.rider-mobile-menu{width:39px;height:39px;flex:0 0 auto;display:grid;place-items:center;border:1px solid #eee9ef;border-radius:10px;background:#fff;color:#33394b;cursor:pointer}.rider-header h1{font-size:22px}.rider-header p{max-width:300px;font-size:10px}.rider-kicker{font-size:8px}.rider-header-actions{gap:7px}.rider-readonly-label{display:none}.rider-account-button{min-height:40px;padding:2px 5px}.rider-header-avatar{width:32px;height:32px}.rider-account-button>span:nth-child(2){display:none}.rider-account-button>span:last-child{display:none}.rider-metrics{gap:9px;margin:15px 0 10px}.rider-metric{min-height:112px;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:12px;border-radius:14px}.rider-metric-icon{width:34px;height:34px;border-radius:10px}.rider-metric-icon svg{width:19px;height:19px}.rider-metric small{font-size:9px}.rider-metric b{font-size:20px}.rider-metric>div>span{font-size:8px}.rider-dashboard-grid{grid-template-columns:1fr;gap:10px}.rider-panel{padding:15px;border-radius:15px}.rider-panel h2{font-size:14px}.rider-recent-panel{grid-column:auto}.rider-empty{min-height:150px}.rider-recent-panel .rider-empty{min-height:130px}.rider-data-note{font-size:9px}.rider-section-panel{margin:15px auto}}
 @media(max-width:380px){.rider-header p{max-width:220px}.rider-metric{grid-template-columns:1fr}.rider-metric-icon{width:32px;height:32px}.rider-metric small{font-size:8px}.rider-metric b{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.rider-portal *{transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Keep the rider portal in the same Dorkar dashboard design system. */
+.rider-portal{
+  --rider-ink:#111323;
+  --rider-muted:#687087;
+  --rider-line:#f0e8ec;
+  --rider-red:#ef233c;
+  background:linear-gradient(135deg,#fff 0%,#fff9fb 52%,#fff4f7 100%);
+}
+.rider-sidebar{background:#fffafd;border-right-color:var(--rider-line)}
+.rider-sidebar-profile{background:linear-gradient(145deg,#fff,#fff5f7);border-color:var(--rider-line)}
+.rider-avatar,.rider-header-avatar{background:#ffedf1;color:var(--rider-red)}
+.rider-nav a{color:#303548}
+.rider-nav a:hover{background:#fff2f5;color:#d91432}
+.rider-nav a.active{background:linear-gradient(95deg,#ef233c,#ed4555);color:#fff;box-shadow:0 8px 18px #ef233c26}
+.rider-nav a.active svg{color:#fff}
+.rider-app-card{background:#fff5f7;border-color:#f4dce2}
+.rider-main{background:transparent}
+.rider-header{border-bottom-color:var(--rider-line)}
+.rider-header p{color:#586176;font-size:13px}
+.rider-readonly-label{border-color:#f0e8ec;background:#fff;color:#626b7e}
+.rider-account-button{border-color:#f0e8ec;box-shadow:0 4px 14px #20152408}
+.rider-metric,.rider-panel{border-color:var(--rider-line);box-shadow:0 8px 24px #21132108}
+.rider-metric{min-height:146px;padding:19px}
+.rider-metric small{color:#30384c;font-size:12px}
+.rider-metric>div>span{color:#687087;font-size:10px}
+.rider-panel{padding:21px}
+.rider-panel h2{font-size:17px}
+.rider-panel header p{color:#687087;font-size:11px}
+.rider-panel-chip{background:#fff0f3;color:#b61c32}
+.rider-empty>span{background:#fff0f3;color:#ef233c}
+.rider-empty>b{font-size:12px}
+.rider-empty>p{color:#687087;font-size:11px}
+.rider-recent-panel>header>a{font-size:11px}
+.rider-data-note{border-color:#f0e8ec;background:#fff7f9;color:#596277;font-size:11px}
+.rider-section-icon{background:#fff0f3;color:#ef233c}
+.rider-footer{border-top-color:var(--rider-line);font-size:10px}
+@media(max-width:760px){
+  .rider-sidebar{background:#fffafd}
+  .rider-header p{font-size:11px}
+  .rider-metric{min-height:118px}
+  .rider-metric small{font-size:10px}
+  .rider-metric>div>span{font-size:9px}
+  .rider-panel h2{font-size:15px}
+  .rider-empty>b{font-size:11px}
+  .rider-empty>p{font-size:10px}
+}
