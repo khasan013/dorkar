@@ -13,7 +13,7 @@ const areas = ['Gulshan', 'Banani', 'Dhanmondi', 'Mirpur', 'Uttara', 'Mohammadpu
 const navItems = [
   ['profile', 'Profile', '#profile-information'],
   ['settings', 'Settings', '/settings'],
-  ['bookings', 'My Bookings', '/ride/history'],
+  ['bookings', 'Order History', '/orders/history'],
   ['locations', 'Saved Locations', '#saved-locations'],
   ['payment', 'Payment Methods', '/payment'],
   ['notifications', 'Notifications', '/notifications'],
@@ -41,7 +41,11 @@ export default function ProfilePage({ editable = false }) {
   const session = readAuthSession()
   const token = session?.accessToken
   const isAdmin = isAdminRole(session?.user?.role)
-  const visibleNavItems = isAdmin ? navItems.filter(([icon]) => icon === 'profile') : navItems
+  const partnerType = String(session?.user?.partnerType || '').toUpperCase()
+  const isRiderPartner = ['DELIVERY', 'RIDE', 'RIDE_SHARE', 'RIDE-SHARE'].includes(partnerType)
+  const visibleNavItems = isAdmin
+    ? navItems.filter(([icon]) => icon === 'profile')
+    : navItems.filter(([icon]) => !(isRiderPartner && icon === 'locations'))
   const [profile, setProfile] = useState(() => sessionProfile(session?.user))
   const [savedProfile, setSavedProfile] = useState(() => sessionProfile(session?.user))
   const [profileLoading, setProfileLoading] = useState(true)
@@ -53,7 +57,7 @@ export default function ProfilePage({ editable = false }) {
   const [notice, setNotice] = useState('')
   const [showLocationForm, setShowLocationForm] = useState(false)
   const [locations, setLocations] = useState([])
-  const [locationsLoading, setLocationsLoading] = useState(!isAdmin)
+  const [locationsLoading, setLocationsLoading] = useState(!isAdmin && !isRiderPartner)
   const [editingLocation, setEditingLocation] = useState(null)
   const [locationDraft, setLocationDraft] = useState({ label: 'Home', address: '' })
   const [logoutOpen, setLogoutOpen] = useState(false)
@@ -86,7 +90,7 @@ export default function ProfilePage({ editable = false }) {
       }
     }).finally(() => { if (!controller.signal.aborted) setProfileLoading(false) })
 
-    if (!isAdmin) {
+    if (!isAdmin && !isRiderPartner) {
       setLocationsLoading(true)
       getSavedLocations(token, controller.signal).then(items => {
         if (!controller.signal.aborted) setLocations(Array.isArray(items) ? items.map(locationFromApi) : [])
@@ -95,7 +99,7 @@ export default function ProfilePage({ editable = false }) {
       }).finally(() => { if (!controller.signal.aborted) setLocationsLoading(false) })
     }
     return () => controller.abort()
-  }, [token, isAdmin])
+  }, [token, isAdmin, isRiderPartner])
 
   const initials = profile.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]?.toUpperCase()).join('') || 'KH'
   const setField = (event) => setProfile(current => ({ ...current, [event.target.name]: event.target.value }))
@@ -255,7 +259,7 @@ export default function ProfilePage({ editable = false }) {
           </div>}
         </section>
 
-        {!isAdmin&&<section className="profile-panel saved-locations-panel" id="saved-locations">
+        {!isAdmin&&!isRiderPartner&&<section className="profile-panel saved-locations-panel" id="saved-locations">
           <div className="profile-panel-heading"><span><ProfileIcon name="locations"/></span><div><h2>Saved Locations</h2><p>{editable ? 'Manage the addresses you use most.' : 'Your frequent pickup and delivery addresses.'}</p></div>{editable&&<button className="profile-add-button" type="button" onClick={()=>{setEditingLocation(null);setLocationDraft({label:'Home',address:''});setShowLocationForm(value=>!value)}}>{showLocationForm?'×':'+'}<span>{showLocationForm?'Close':'Add location'}</span></button>}</div>
           {locationsLoading&&<div className="profile-empty-state"><div><b>Loading saved locations…</b></div></div>}
           {!locationsLoading&&locations.length===0&&!showLocationForm&&<div className="profile-empty-state"><span><ProfileIcon name="home"/></span><div><b>No saved locations yet</b><p>Add your home, work, or another frequent address.</p></div></div>}

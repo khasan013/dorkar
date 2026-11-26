@@ -1,0 +1,26 @@
+.order-history-page{max-width:1250px;min-height:calc(100vh - 120px);margin:0 auto;padding:36px clamp(18px,4vw,52px);color:#111323}
+.order-history-heading{margin-bottom:24px}
+.order-history-kicker{color:#747b8d;font-size:11px;font-weight:700;letter-spacing:.08em}
+.order-history-heading h1{margin:5px 0;font-size:clamp(27px,3vw,36px);letter-spacing:-1px}
+.order-history-heading p,.order-history-card-heading p{margin:0;color:#687087;font-size:14px}
+.order-history-card{min-height:330px;overflow:hidden;border:1px solid #f0e8ec;border-radius:20px;background:#fff;box-shadow:0 10px 30px #21132108}
+.order-history-card-heading{display:flex;align-items:center;justify-content:space-between;padding:22px 24px;border-bottom:1px solid #f0e8ec}
+.order-history-card-heading h2{margin:0 0 4px;font-size:19px}
+.order-history-table-scroll{overflow-x:auto}
+.order-history-table{width:100%;border-collapse:collapse;text-align:left}
+.order-history-table th{padding:13px 18px;background:#fff8fa;color:#535d72;font-size:12px;font-weight:700;white-space:nowrap}
+.order-history-table td{padding:16px 18px;border-top:1px solid #f3edf0;color:#30384b;font-size:13px;vertical-align:middle}
+.order-history-table td:first-child{min-width:145px}
+.order-history-table td:first-child small{display:block;margin-top:4px;color:#7b8291;font-size:11px}
+.order-history-service,.order-history-status{display:inline-flex;align-items:center;min-height:26px;padding:4px 9px;border-radius:999px;background:#fff0f3;color:#c51f37;font-size:11px;font-weight:700;white-space:nowrap}
+.service-food{background:#fff3e4;color:#c87400}.service-parcel{background:#f4eaff;color:#812bd0}.service-ride{background:#eaf3ff;color:#226fc5}
+.order-history-status{background:#f2f3f6;color:#525b6e}.status-completed,.status-delivered{background:#e8f8ee;color:#16834b}.status-cancelled,.status-failed{background:#fff0f2;color:#c51f37}.status-pending,.status-confirmed{background:#fff5e6;color:#a96500}
+.order-history-state{min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center}
+.order-history-state>b{margin-top:12px;color:#171a2a;font-size:16px}
+.order-history-state>p{max-width:440px;margin:7px 0 14px;color:#687087;font-size:13px;line-height:1.6}
+.order-history-state>a,.order-history-state>button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border:1px solid #ef233c;border-radius:11px;background:#ef233c;color:#fff;text-decoration:none;font:600 13px 'Poppins','DM Sans',sans-serif;cursor:pointer}
+.order-history-empty-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#fff0f3;color:#ef233c;font-size:24px}
+.order-history-loader{width:27px;height:27px;border:3px solid #ffe0e6;border-top-color:#ef233c;border-radius:50%;animation:order-history-spin .75s linear infinite}
+@keyframes order-history-spin{to{transform:rotate(360deg)}}
+@media(max-width:650px){.order-history-page{padding:24px 14px}.order-history-heading p{font-size:12px}.order-history-card{border-radius:16px}.order-history-card-heading{padding:17px}.order-history-table th,.order-history-table td{padding:12px 13px}.order-history-table td{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.order-history-loader{animation-duration:2s}}
