@@ -45,6 +45,10 @@ export function getPostLoginPath(user) {
     return '/restaurant/dashboard'
   }
 
+  if (['DELIVERY', 'RIDE', 'RIDE_SHARE', 'RIDE-SHARE'].includes(String(user?.partnerType || '').toUpperCase())) {
+    return safeRequestedPath && requestedPath.startsWith('/rider/') ? requestedPath : '/rider/dashboard'
+  }
+
   if (safeRequestedPath) {
     return requestedPath
   }

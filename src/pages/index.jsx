@@ -56,6 +56,7 @@ import { canAccessAdminPath, isAdminRole } from '../auth/adminRoles'
 import ChangePasswordPage from './ChangePasswordPage'
 import RestaurantPartnerDashboardPage from './Restaurant/PartnerDashboardPage'
 import RestaurantPartnerWorkspacePage from './Restaurant/RestaurantPartnerWorkspacePage'
+import RiderDashboardPage from './Rider/RiderDashboardPage'
 
 const protectedPaths = new Set([
   '/dashboard',
@@ -70,6 +71,10 @@ const protectedPaths = new Set([
   '/restaurant/profile',
   '/restaurant/staff',
   '/restaurant/settings',
+  '/rider/dashboard',
+  '/rider/deliveries',
+  '/rider/earnings',
+  '/rider/performance',
   '/change-password',
   '/profile',
   '/settings',
@@ -132,6 +137,10 @@ const routes = {
   '/restaurant/profile': RestaurantPartnerWorkspacePage,
   '/restaurant/staff': RestaurantPartnerWorkspacePage,
   '/restaurant/settings': RestaurantPartnerWorkspacePage,
+  '/rider/dashboard': RiderDashboardPage,
+  '/rider/deliveries': RiderDashboardPage,
+  '/rider/earnings': RiderDashboardPage,
+  '/rider/performance': RiderDashboardPage,
   '/ride/booking': RideBookingPage,
   '/ride/tracking': RideTrackingPage,
   '/food/restaurants': FoodRestaurantsPage,
@@ -163,7 +172,7 @@ export default function Pages() {
   const path = requestedPath === '/signin' ? '/login' : requestedPath === '/signup' ? '/register' : requestedPath
   const session = readAuthSession()
   const [resolvedUser, setResolvedUser] = useState(session?.user || null)
-  const partnerRouteNeedsRefresh = path === '/dashboard' || path.startsWith('/restaurant/')
+  const partnerRouteNeedsRefresh = path === '/dashboard' || path.startsWith('/restaurant/') || path.startsWith('/rider/')
   const [partnerTypeResolved, setPartnerTypeResolved] = useState(!partnerRouteNeedsRefresh || !session)
   const isProtected = protectedPaths.has(path) && !session
   const isAdminPath = path === '/admin' || path.startsWith('/admin/')
@@ -172,6 +181,10 @@ export default function Pages() {
   const adminOnUserDashboard = path === '/dashboard' && hasAdminRole
   const mustChangePassword = Boolean(session?.user?.mustChangePassword)
   const restaurantOnUserDashboard = path === '/dashboard' && String(resolvedUser?.partnerType || '').toUpperCase() === 'RESTAURANT'
+  const riderPartnerType = String(resolvedUser?.partnerType || '').toUpperCase()
+  const isRiderPartner = ['DELIVERY', 'RIDE', 'RIDE_SHARE', 'RIDE-SHARE'].includes(riderPartnerType)
+  const riderOnUserDashboard = path === '/dashboard' && isRiderPartner
+  const riderRouteDenied = path.startsWith('/rider/') && partnerTypeResolved && !isRiderPartner
   const restaurantRouteDenied = path.startsWith('/restaurant/') && partnerTypeResolved && String(resolvedUser?.partnerType || '').toUpperCase() !== 'RESTAURANT'
   useEffect(() => {
     if (isProtected) redirectToLogin()
@@ -182,6 +195,9 @@ export default function Pages() {
   useEffect(() => {
     if (restaurantOnUserDashboard) window.location.replace('/restaurant/dashboard')
   }, [restaurantOnUserDashboard])
+  useEffect(() => {
+    if (riderOnUserDashboard) window.location.replace('/rider/dashboard')
+  }, [riderOnUserDashboard])
   useEffect(() => {
     if (!session?.accessToken || partnerTypeResolved || !partnerRouteNeedsRefresh) return
     const controller = new AbortController()
@@ -198,6 +214,9 @@ export default function Pages() {
       if (path === '/dashboard' && String(refreshed.partnerType || '').toUpperCase() === 'RESTAURANT') {
         window.location.replace('/restaurant/dashboard')
       }
+      if (path === '/dashboard' && ['DELIVERY', 'RIDE', 'RIDE_SHARE', 'RIDE-SHARE'].includes(String(refreshed.partnerType || '').toUpperCase())) {
+        window.location.replace('/rider/dashboard')
+      }
     }).catch(() => {}).finally(() => {
       window.clearTimeout(timeout)
       setPartnerTypeResolved(true)
@@ -211,12 +230,14 @@ export default function Pages() {
   if (isProtected) return <main className="auth-redirect" role="status">Redirecting you to sign in…</main>
   if (adminOnUserDashboard) return <main className="auth-redirect" role="status">Opening your admin dashboard…</main>
   if (restaurantOnUserDashboard) return <main className="auth-redirect" role="status">Opening your restaurant dashboard…</main>
-  if (!partnerTypeResolved && (path === '/dashboard' || path.startsWith('/restaurant/'))) return <main className="auth-redirect" role="status">Checking your partner dashboard…</main>
+  if (riderOnUserDashboard) return <main className="auth-redirect" role="status">Opening your rider dashboard…</main>
+  if (!partnerTypeResolved && (path === '/dashboard' || path.startsWith('/restaurant/') || path.startsWith('/rider/'))) return <main className="auth-redirect" role="status">Checking your partner dashboard…</main>
   if (mustChangePassword && path !== '/change-password') return <main className="auth-redirect" role="status">Opening required password update…</main>
   if (path === '/change-password') return <><ChangePasswordPage/><SiteFooter/></>
   if (isAdminPath && !hasAdminRole) return <main className="admin-denied"><div><span>403</span><h1>Admin access required</h1><p>Sign in with an administrator account to open the Dorkar admin dashboard.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (isAdminPath && !hasAdminPageAccess) return <main className="admin-denied"><div><span>403</span><h1>Admin role does not allow this area</h1><p>Your account can only manage the modules assigned to its role. Contact a Super Admin if you need access.</p><a href="/admin">Return to your admin dashboard</a></div></main>
   if (restaurantRouteDenied) return <main className="admin-denied"><div><span>403</span><h1>Restaurant partner access required</h1><p>Sign in with the restaurant account created by your Dorkar administrator.</p><a href="/dashboard">Go to your dashboard</a></div></main>
+  if (riderRouteDenied) return <main className="admin-denied"><div><span>403</span><h1>Rider access required</h1><p>Sign in with a delivery rider or ride-share driver account created by your Dorkar administrator.</p><a href="/dashboard">Go to your dashboard</a></div></main>
   if (path === '/') return <HomePage />
   if (path === '/dashboard') return <><UserDashboardPage /><SiteFooter /></>
   if (path === '/profile') return <DetailedPage><ProfilePage /></DetailedPage>
@@ -224,6 +245,7 @@ export default function Pages() {
   if (!Page) return <HomePage />
   if (isAdminPath) return <Page />
   if (path.startsWith('/restaurant/')) return <Page />
+  if (path.startsWith('/rider/')) return <Page />
   if (path === '/login' || path === '/register') return <><Page /><SiteFooter /></>
   return <DetailedPage><Page /></DetailedPage>
 }

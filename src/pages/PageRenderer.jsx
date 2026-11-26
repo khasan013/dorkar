@@ -51,9 +51,11 @@ function Header(){
   const isAbout=pathname==='/about'
   const isContact=pathname==='/contact'
   const adminUser=['ADMIN','SUPER_ADMIN'].includes(String(session?.user?.role||'').toUpperCase())
-  const restaurantPartner=String(session?.user?.partnerType||'').toUpperCase()==='RESTAURANT'
-  const dashboardPath=adminUser?'/admin':restaurantPartner?'/restaurant/dashboard':'/dashboard'
-  const dashboardLabel=adminUser?'Admin dashboard':restaurantPartner?'Restaurant dashboard':Object.prototype.hasOwnProperty.call(session?.user||{},'partnerType')?'User dashboard':'Dashboard'
+  const partnerType=String(session?.user?.partnerType||'').toUpperCase()
+  const restaurantPartner=partnerType==='RESTAURANT'
+  const riderPartner=['DELIVERY','RIDE','RIDE_SHARE','RIDE-SHARE'].includes(partnerType)
+  const dashboardPath=adminUser?'/admin':restaurantPartner?'/restaurant/dashboard':riderPartner?'/rider/dashboard':'/dashboard'
+  const dashboardLabel=adminUser?'Admin dashboard':restaurantPartner?'Restaurant dashboard':riderPartner?'Rider dashboard':Object.prototype.hasOwnProperty.call(session?.user||{},'partnerType')?'User dashboard':'Dashboard'
   const profileName=session?.user?.name||'Your account'
   const profileImage=session?.user?.avatarUrl||session?.user?.profileImageUrl
   return <header className="header"><div className="nav-wrap"><Brand/><nav className={open?'nav open':'nav'} aria-label="Main navigation">
