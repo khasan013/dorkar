@@ -176,7 +176,7 @@ export default function PartnerDashboardPage() {
           <button className="restaurant-account-trigger" type="button" aria-expanded={accountOpen} onClick={() => setAccountOpen(open => !open)}>
             <span className="restaurant-avatar">{initials}</span><span className="restaurant-account-label"><b>{restaurantName}</b><small>Restaurant Admin</small></span><span className="restaurant-chevron">⌄</span>
           </button>
-          {accountOpen && <div className="restaurant-account-menu"><b>{restaurantName}</b><small>{session?.user?.email || session?.user?.phone}</small><a href="/profile">Restaurant profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
+          {accountOpen && <div className="restaurant-account-menu"><b>{restaurantName}</b><small>{session?.user?.email || session?.user?.phone}</small><a href="/restaurant/dashboard">Restaurant dashboard</a><a href="/profile">Restaurant profile</a><button type="button" onClick={signOut}>Sign out</button></div>}
         </div>
       </header>
 
