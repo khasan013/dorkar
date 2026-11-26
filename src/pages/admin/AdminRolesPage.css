@@ -5,4 +5,83 @@
 @media(max-width:380px){.admin-access-kpis small{font-size:6px}.admin-access-kpis i{font-size:6px}.admin-access-table-heading>div{gap:6px}.admin-access-section-icon{width:29px;height:29px}.admin-access-add-button{max-width:105px;white-space:normal;line-height:1.2}.admin-access-pagination{align-items:flex-start;flex-direction:column}.admin-access-pagination>div{align-self:flex-end}}
 .admin-role-form select{height:36px;min-width:0;padding:0 9px;border:1px solid #e6e4eb;border-radius:8px;background:#fff;color:#272c3c;font:500 9px 'Poppins','DM Sans',sans-serif}.admin-role-form select:focus{outline:0;border-color:#f29aaa;box-shadow:0 0 0 3px #ef233c12}
 
+/* Keep admin role and partner management text at the same readable scale as the other admin pages. */
+.admin-access-kpis small{font-size:11px}
+.admin-access-kpis b{font-size:23px}
+.admin-access-kpis i{font-size:10px}
+.admin-access-quick-add b{font-size:14px}
+.admin-access-quick-add small{font-size:10px}
+.admin-access-quick-actions button{font-size:11px}
+.admin-access-tabs button{font-size:11px}
+.admin-access-tabs button small{font-size:10px}
+.admin-access-table-heading h2{font-size:16px}
+.admin-access-table-heading h2>span{font-size:10px}
+.admin-access-table-heading p{font-size:10px}
+.admin-access-add-button{font-size:11px}
+.admin-access-filters{grid-template-columns:minmax(180px,1fr) 145px 145px auto}
+.admin-access-filters>label,.admin-access-filters>select{height:39px}
+.admin-access-filters input,.admin-access-filters>select,.admin-access-filters>button{font-size:10px}
+.admin-access-table th{font-size:10px;padding:11px 10px}
+.admin-access-table td{font-size:10px}
+.admin-access-person{gap:10px}
+.admin-access-person>span{width:34px;height:34px;font-size:10px}
+.admin-access-person b{font-size:11px}
+.admin-access-person small{font-size:9px}
+.admin-access-role-badge,.admin-access-status{font-size:9px;padding:5px 8px}
+.admin-access-row-actions select{font-size:9px}
+.admin-access-pagination{font-size:10px;padding:12px 14px}
+.admin-access-empty b{font-size:11px}
+.admin-access-empty p{font-size:10px}
+.admin-access-empty button{font-size:10px}
+.admin-access-side-heading h2{font-size:14px}
+.admin-access-side-heading p{font-size:10px}
+.admin-access-role-list b{font-size:10px}
+.admin-access-role-list small{font-size:9px}
+.admin-access-pending-badge{font-size:8px}
+.admin-access-disabled-wrap button{font-size:10px}
+.admin-access-disabled-wrap small{font-size:9px}
+.admin-access-audit-empty b{font-size:10px}
+.admin-access-audit-empty p{font-size:9px}
+.admin-access-current-role small,.admin-access-current-role i{font-size:9px}
+.admin-access-current-role b{font-size:11px}
+.admin-access-alert p,.admin-access-notice p{font-size:11px}
+.admin-access-modal-kicker{font-size:10px}
+.admin-access-modal h2,.admin-access-confirm h2{font-size:20px}
+.admin-access-modal>p,.admin-access-modal form label{font-size:11px}
+.admin-access-modal form input,.admin-role-form select{height:40px;font-size:11px}
+.admin-access-form-note{font-size:10px}
+.admin-access-modal form>button,.admin-access-detail-done{height:42px;font-size:11px}
+.admin-access-detail-modal dt,.admin-access-detail-modal dd,.admin-access-confirm p{font-size:11px}
+.admin-access-confirm button{height:37px;font-size:10px}
+
+@media(max-width:760px){
+  .admin-access-kpis small{font-size:9px}
+  .admin-access-kpis i{font-size:8px}
+  .admin-access-quick-add b{font-size:12px}
+  .admin-access-quick-add small{font-size:9px}
+  .admin-access-quick-actions button,.admin-access-tabs button{font-size:10px}
+  .admin-access-table-heading h2{font-size:13px}
+  .admin-access-table-heading p{font-size:9px}
+  .admin-access-add-button{font-size:9px}
+  .admin-access-filters{grid-template-columns:1fr 1fr auto}
+  .admin-access-filters input,.admin-access-filters>select,.admin-access-filters>button{font-size:9px}
+  .admin-access-table th,.admin-access-table td{font-size:9px}
+  .admin-access-person b{font-size:10px}
+  .admin-access-person small{font-size:8px}
+  .admin-access-pagination{font-size:9px}
+  .admin-access-empty b{font-size:10px}
+  .admin-access-empty p{font-size:9px}
+  .admin-access-side-heading h2{font-size:13px}
+  .admin-access-side-heading p,.admin-access-role-list small,.admin-access-disabled-wrap small{font-size:9px}
+  .admin-access-role-list b{font-size:10px}
+  .admin-access-modal form label,.admin-access-modal>p{font-size:10px}
+  .admin-access-modal form input,.admin-role-form select{font-size:10px}
+  .admin-access-form-note{font-size:9px}
+}
+@media(max-width:380px){
+  .admin-access-kpis small{font-size:8px}
+  .admin-access-kpis i{font-size:7px}
+  .admin-access-pagination{font-size:8px}
+}
+
 
