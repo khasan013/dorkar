@@ -87,3 +87,5 @@
 
 
 .admin-access-form-error{grid-column:1/-1;display:flex;align-items:flex-start;gap:8px;padding:10px 11px;border:1px solid #ffd1d9;border-radius:9px;background:#fff2f4;color:#ad1f37;font-size:11px;line-height:1.5}.admin-access-form-error svg{flex:0 0 auto;margin-top:1px}@media(max-width:760px){.admin-access-form-error{grid-column:auto;font-size:10px}}
+
+.admin-access-modal form>.restaurant-location-map{grid-column:1/-1}.admin-access-location-fields{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.admin-access-location-fields label{display:grid;gap:5px;color:#454b60;font-size:11px;font-weight:600}.admin-access-location-fields input{width:100%;min-width:0;padding:9px 10px;border:1px solid #e6e4eb;border-radius:9px;font:500 11px 'Poppins','DM Sans',sans-serif}.admin-access-location-fields input:focus{border-color:#f29aaa;outline:0;box-shadow:0 0 0 3px #ef233c12}@media(max-width:760px){.admin-access-location-fields{grid-template-columns:1fr}.admin-access-modal form>.restaurant-location-map{grid-column:auto}}

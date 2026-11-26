@@ -135,7 +135,7 @@ async function adminMutation(path, accessToken, method, body) {
 }
 
 export async function getAdminRestaurants(accessToken, signal) {
-  const response = await fetch(`${API_BASE_URL}/api/v1/food/restaurants`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/food/restaurants`, {
     headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}` },
     signal,
   })
@@ -148,8 +148,29 @@ export async function getAdminRestaurants(accessToken, signal) {
   return result?.data
 }
 
+export async function uploadAdminRestaurantLogo(file, accessToken) {
+  const body = new FormData()
+  body.append('file', file)
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/food/restaurants/logo`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}` },
+    body,
+  })
+  const result = await response.json().catch(() => null)
+  if (!response.ok || result?.success === false) {
+    const error = new Error(result?.message || `Restaurant logo upload failed (HTTP ${response.status})`)
+    error.status = response.status
+    throw error
+  }
+  return result?.data
+}
+
 export async function createAdminRestaurant(restaurant, accessToken) {
   return adminMutation('/food/restaurants', accessToken, 'POST', restaurant)
+}
+
+export async function updateAdminRestaurant(id, restaurant, accessToken) {
+  return adminMutation(`/food/restaurants/${encodeURIComponent(id)}`, accessToken, 'PUT', restaurant)
 }
 
 export async function addAdminMenuItem(restaurantId, item, accessToken) {
