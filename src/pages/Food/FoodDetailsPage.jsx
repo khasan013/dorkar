@@ -1,5 +1,5 @@
-import { ScreenContent } from '../PageRenderer'
+import { FoodDetailsOrderPage } from './FoodOrderingPages'
 
 export default function FoodDetailsPage() {
-  return <ScreenContent path="/food/details" />
+  return <FoodDetailsOrderPage />
 }
