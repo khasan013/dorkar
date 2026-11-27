@@ -1,20 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import dorkarLogo from '../../assets/D-Logo.png'
 import heroScenery from '../../assets/Hero-bg-illlustration.png'
 import scooter from '../../assets/signinpage.png'
 import { readAuthSession, signOut } from '../../auth/session'
+import { getOrderHistory } from '../../services/orderHistoryApi'
+import { getNotifications, getUnreadNotificationCount } from '../../services/notificationApi'
 
 const services = [
   { name: 'Ride Sharing', description: 'Book a ride quickly and at a fair price.', icon: 'car', color: 'ride', href: '/ride' },
   { name: 'Food Delivery', description: 'Order from your favorite restaurants.', icon: 'food', color: 'food', href: '/food' },
   { name: 'Parcel Delivery', description: 'Send and receive parcels easily.', icon: 'parcel', color: 'parcel', href: '/parcel' },
   { name: 'Blood Donation', description: 'Find or be a blood donor and save lives.', icon: 'blood', color: 'blood', href: '/blood' },
-]
-
-const activities = [
-  { icon: 'car', color: 'ride', title: 'Ride to Gulshan 2', time: 'Today, 6:20 PM', amount: '৳360', status: 'Completed' },
-  { icon: 'food', color: 'food', title: 'Food from Kacchi Bhai', time: 'Today, 1:15 PM', amount: '৳590', status: 'Delivered' },
-  { icon: 'parcel', color: 'parcel', title: 'Parcel to Dhanmondi', time: 'Yesterday, 4:30 PM', amount: '৳120', status: 'Completed' },
 ]
 
 function Icon({ name, size = 22 }) {
@@ -40,6 +36,22 @@ function DashboardNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [location, setLocation] = useState('Dhaka')
   const user = readAuthSession()?.user
+  const token = readAuthSession()?.accessToken
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  useEffect(() => {
+    if (!token) return
+    const controller = new AbortController()
+    let active = true
+    const refresh = () => Promise.all([getNotifications(token, controller.signal), getUnreadNotificationCount(token, controller.signal)])
+      .then(([items, count]) => { if (active) { setNotifications(items.slice(0, 3)); setUnreadCount(count) } })
+      .catch(() => {})
+    const timer = window.setInterval(refresh, 60000)
+    window.addEventListener('focus', refresh)
+    window.addEventListener('dorkar-notification-change', refresh)
+    refresh()
+    return () => { active = false; controller.abort(); window.clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('dorkar-notification-change', refresh) }
+  }, [token])
   const userName = user?.name || 'Dorkar user'
   const initials = userName.split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('')
   const links = [['Home', '/dashboard'], ['Ride', '/ride'], ['Food', '/food'], ['Parcel', '/parcel'], ['Blood Donation', '/blood']]
@@ -57,8 +69,8 @@ function DashboardNavbar() {
           {menu === 'location' && <div className="nav-popover location-popover"><b>Choose your area</b>{['Dhaka', 'Chattogram', 'Sylhet', 'Khulna'].map((city) => <button key={city} onClick={() => { setLocation(city); setMenu('') }}>{city}{city === location && <span>Current</span>}</button>)}</div>}
         </div>
         <div className="nav-menu-wrap">
-          <button className="notification-trigger" aria-label="Notifications" aria-expanded={menu === 'notifications'} onClick={() => setMenu(menu === 'notifications' ? '' : 'notifications')}><Icon name="bell"/><i/></button>
-          {menu === 'notifications' && <div className="nav-popover notification-popover"><b>Notifications</b><a href="/notifications">Your driver is on the way <small>Ride · 10 min ago</small></a><a href="/notifications">Kacchi Bhai received your order <small>Food · 1 hour ago</small></a><a className="popover-link" href="/notifications">View all notifications</a></div>}
+          <button className="notification-trigger" aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'} aria-expanded={menu === 'notifications'} onClick={() => setMenu(menu === 'notifications' ? '' : 'notifications')}><Icon name="bell"/>{unreadCount > 0 && <i/>}</button>
+          {menu === 'notifications' && <div className="nav-popover notification-popover"><b>Notifications</b>{notifications.length ? notifications.map(item => <a href="/notifications" key={item.id} onClick={() => setMenu('')}><span>{item.title || 'Dorkar update'}</span><small>{item.message}</small></a>) : <p className="dashboard-no-notifications">No updates yet.</p>}<a className="popover-link" href="/notifications" onClick={() => setMenu('')}>View all notifications</a></div>}
         </div>
         <div className="nav-menu-wrap profile-menu-wrap">
           <button className="profile-trigger" onClick={() => setMenu(menu === 'profile' ? '' : 'profile')} aria-expanded={menu === 'profile'}><span className="profile-avatar">{(user?.avatarUrl||user?.profileImageUrl) ? <img src={user.avatarUrl||user.profileImageUrl} alt=""/> : initials}</span><span className="profile-name">{userName}</span><Icon name="chevron" size={17}/></button>
@@ -93,26 +105,45 @@ function ServiceCard({ service }) {
  </a>
 }
 
-function RecentActivity() {
+function RecentActivity({ orders }) {
+  const recent = orders.slice(0, 4).map(order => {
+    let details = order.details || {}
+    if (typeof details === 'string') { try { details = JSON.parse(details) } catch { details = {} } }
+    const type = String(order.serviceType || '').toUpperCase()
+    const icon = type.includes('FOOD') ? 'food' : type.includes('RIDE') ? 'car' : type.includes('PARCEL') ? 'parcel' : 'blood'
+    const title = type.includes('FOOD') ? `Food from ${details.restaurantName || 'restaurant'}` : type.includes('RIDE') ? `Ride to ${details.dropoffLocation || details.destination || 'your destination'}` : type.includes('PARCEL') ? `Parcel to ${details.deliveryAddress || 'your recipient'}` : 'Blood donation request'
+    const created = order.createdAt ? new Date(order.createdAt) : null
+    const time = created && !Number.isNaN(created.getTime()) ? new Intl.DateTimeFormat('en-BD', { dateStyle: 'medium', timeStyle: 'short' }).format(created) : 'Date unavailable'
+    const amount = order.amount == null ? '—' : `৳${Number(order.amount).toLocaleString('en-BD')}`
+    const status = String(order.status || 'Submitted').replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+    return { id: `${order.serviceType}-${order.id}`, icon, color: icon, title, time, amount, status }
+  })
   return <section className="recent-activity">
     <div className="activity-heading"><h2>Recent Activity</h2><a href="/activity">View All</a></div>
-    <div className="activity-list">
-      {activities.map((activity) => <article className="activity-row" key={activity.title}>
+    <div className="activity-list">{recent.length ? recent.map((activity) => <article className="activity-row" key={activity.id}>
         <span className={`activity-icon ${activity.color}`}><Icon name={activity.icon} size={27}/></span>
         <div className="activity-details"><b>{activity.title}</b><small>{activity.time}</small></div>
         <div className="activity-result"><b>{activity.amount}</b><small>{activity.status}</small></div>
-      </article>)}
+      </article>) : <div className="dashboard-activity-empty">Your rides, food orders, parcels, and donation requests will appear here.</div>}
     </div>
   </section>
 }
 
 export default function UserDashboardPage() {
+  const token = readAuthSession()?.accessToken
+  const [orders, setOrders] = useState([])
+  useEffect(() => {
+    if (!token) return
+    const controller = new AbortController()
+    getOrderHistory(token, controller.signal).then(setOrders).catch(() => {})
+    return () => controller.abort()
+  }, [token])
   return <div className="dashboard-page">
     <DashboardNavbar />
     <main className="dashboard-content">
       <WelcomeHero />
       <section className="dashboard-services" aria-label="Dorkar services">{services.map((service) => <ServiceCard service={service} key={service.name}/>)}</section>
-      <RecentActivity />
+      <RecentActivity orders={orders} />
     </main>
   </div>
 }

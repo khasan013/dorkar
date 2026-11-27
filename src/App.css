@@ -470,6 +470,7 @@ body:has(.auth-layout){background:radial-gradient(ellipse at 7% 15%,#fff0f3,tran
 @media(max-width:1050px){.footer-main{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:25px}.footer-intro,.footer-contact{grid-column:1/-1}.footer-contact{border-left:0;padding-left:0}}
 
 .dashboard-page .profile-avatar img{width:100%;height:100%;border-radius:inherit;object-fit:cover}
+.dashboard-no-notifications,.dashboard-activity-empty{margin:0;padding:14px 2px;color:#747b8e;font-size:13px;line-height:1.5}.notification-popover>a>span{display:block;font-weight:700}.notification-popover>a>small{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;max-width:250px}
 
 /* Site-wide page shells: fill the viewport like the dashboard workspaces. */
 .header{width:100%}

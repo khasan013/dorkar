@@ -15,6 +15,7 @@ import googlePlayIcon from '../assets/Google-Play-Icon.png'
 import AuthForm from '../auth/AuthForm'
 import { readAuthSession, saveAuthSession, signOut } from '../auth/session'
 import OffersBannerCarousel from '../components/home/OffersBannerCarousel'
+import { getUnreadNotificationCount } from '../services/notificationApi'
 const pages = [  ['Home', '/', 'Home'], ['Ride Sharing', '/ride', 'Services'], ['Food Delivery', '/food', 'Services'], ['Parcel Delivery', '/parcel', 'Services'], ['Blood Donation', '/blood', 'Services'],  ['Login', '/login', 'Account'], ['Register', '/register', 'Account'], ['User Dashboard', '/dashboard', 'Account'], ['Profile', '/profile', 'Account'], ['Ride Booking', '/ride/booking', 'Ride'], ['Ride Tracking', '/ride/tracking', 'Ride'],  ['Food Restaurants', '/food/restaurants', 'Food'], ['Food Details', '/food/details', 'Food'], ['Cart', '/cart', 'Food'], ['Checkout', '/checkout', 'Food'], ['Order Tracking', '/orders/tracking', 'Food'], ['Parcel Booking', '/parcel/booking', 'Parcel'], ['Parcel Tracking', '/parcel/tracking', 'Parcel'],  ['Blood Donor Search', '/blood/donors', 'Blood'], ['Blood Donation Request', '/blood/request', 'Blood'], ['Donor Profile', '/blood/donor-profile', 'Blood'], ['Payment', '/payment', 'Account'], ['Notifications', '/notifications', 'Account'], ['Ride History', '/ride/history', 'Account'], ['Order History', '/orders/history', 'Account'], ['Help & Support', '/support', 'Info'], ['About Us', '/about', 'Info'], ['Contact Us', '/contact', 'Info'], ['Partner Registration', '/partner', 'Info'], ['Terms & Conditions', '/terms', 'Info'], ['Privacy Policy', '/privacy', 'Info'],]
 const services = [  { title:'Ride Sharing', desc:'Book a ride quickly, safely and at a fair price.', icon:'ride', art:'car', tint:'pink', href:'/ride' },  { title:'Food Delivery', desc:'Your favorite meals from top restaurants.', icon:'food', art:'burger', tint:'orange', href:'/food' },  { title:'Parcel Delivery', desc:'Send and receive parcels across the city easily.', icon:'parcel', art:'parcel', tint:'blue', href:'/parcel' },  { title:'Blood Donor', desc:'Find blood donors or register as a donor to save lives.', icon:'blood', art:'blood', tint:'pink', href:'/blood' },]
 const serviceArtwork = { car: rideArtwork, burger: foodArtwork, parcel: parcelArtwork, blood: bloodArtwork }
@@ -23,6 +24,26 @@ const benefits = [['shield','Safe & Reliable','Verified users & secure service']
 function Brand({ light=false }) { return <a href="/" className={`brand ${light?'light':''}`} aria-label="Dorkar home"><img className="brand-symbol" src={dorkarLogo} alt=""/><span>Dorkar</span></a> }
 function AuthBrand() { return <a href="/" className="auth-brand" aria-label="Dorkar home"><img className="auth-brand-symbol" src={dorkarLogoMark} alt=""/><span>Dorkar</span></a> }
 function StoreBadges(){return <div className="store-badges"><a href="#download" className="store-badge google-play-badge" aria-label="Get Dorkar on Google Play"><img className="play-store-logo" src={googlePlayIcon} alt=""/><span><small>GET IT ON</small><b>Google Play</b></span></a></div>}
+function NotificationBell({ session }) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (!session?.accessToken) { setCount(0); return }
+    let active = true
+    const controller = new AbortController()
+    const refresh = () => getUnreadNotificationCount(session.accessToken, controller.signal).then(value => { if (active) setCount(value) }).catch(() => {})
+    refresh()
+    const timer = window.setInterval(refresh, 60000)
+    const onFocus = () => refresh()
+    const onNotificationChange = () => refresh()
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('dorkar-notification-change', onNotificationChange)
+    return () => { active = false; controller.abort(); window.clearInterval(timer); window.removeEventListener('focus', onFocus); window.removeEventListener('dorkar-notification-change', onNotificationChange) }
+  }, [session?.accessToken])
+  return <a className="notification-bell" href="/notifications" aria-label={count ? `Notifications, ${count} unread` : 'Notifications'} title="Notifications">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+    {count > 0 && <span className="notification-bell-count">{count > 99 ? '99+' : count}</span>}
+  </a>
+}
 function Header(){
   const [open,setOpen]=useState(false)
   const [profileOpen,setProfileOpen]=useState(false)
@@ -65,7 +86,7 @@ function Header(){
     <a className={isAbout?'nav-active':''} aria-current={isAbout?'page':undefined} href="/about" onClick={()=>setOpen(false)}>About</a>
     <a className={isContact?'nav-active':''} aria-current={isContact?'page':undefined} href="/contact" onClick={()=>setOpen(false)}>Contact</a>
     {!session&&<a className="nav-register-link" href="/register" onClick={()=>setOpen(false)}>Create account</a>}
-  </nav><div className="nav-actions"><a className="button outline partner-cta" href="/partner">Partner with Us</a>{session?<div className="header-profile-wrap"><button className="header-profile-button" type="button" aria-label={`Open ${profileName} profile menu`} aria-expanded={profileOpen} onClick={()=>setProfileOpen(!profileOpen)}>{profileImage?<img src={profileImage} alt=""/>:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>}</button>{profileOpen&&<div className="header-profile-menu"><b>{profileName}</b><small>{session.user?.email||session.user?.phone||'Dorkar account'}</small>{!restaurantPartner&&<a href="/profile">My profile</a>}<a href={dashboardPath}>{dashboardLabel}</a><button type="button" onClick={signOut}>Sign out</button></div>}</div>:<><a className="button outline header-signin" href="/login">Sign in</a><a className="button outline header-register" href="/register">Create account</a></>}<a className="button primary app-cta" href={isHome?'#download':'/#download'}>Get the App</a></div><button className="menu-toggle" onClick={()=>setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open?'×':'☰'}</button></div></header>
+  </nav><div className="nav-actions"><a className="button outline partner-cta" href="/partner">Partner with Us</a>{session&&<NotificationBell session={session} />}{session?<div className="header-profile-wrap"><button className="header-profile-button" type="button" aria-label={`Open ${profileName} profile menu`} aria-expanded={profileOpen} onClick={()=>setProfileOpen(!profileOpen)}>{profileImage?<img src={profileImage} alt=""/>:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>}</button>{profileOpen&&<div className="header-profile-menu"><b>{profileName}</b><small>{session.user?.email||session.user?.phone||'Dorkar account'}</small>{!restaurantPartner&&<a href="/profile">My profile</a>}<a href={dashboardPath}>{dashboardLabel}</a><button type="button" onClick={signOut}>Sign out</button></div>}</div>:<><a className="button outline header-signin" href="/login">Sign in</a><a className="button outline header-register" href="/register">Create account</a></>}<a className="button primary app-cta" href={isHome?'#download':'/#download'}>Get the App</a></div><button className="menu-toggle" onClick={()=>setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open?'×':'☰'}</button></div></header>
 }
 function PhoneMock(){return <div className="phone-wrap"><img className="hero-scenery" src={heroScenery} alt=""/><img className="hero-device" src={heroPhone} alt="Dorkar app home screen on a smartphone"/></div>}
 function ServiceIcon({type}){const paths={ride:<><path d="m4 13 2-5h12l2 5v5h-2v-2H6v2H4Zm3-5-1 4h12l-1-4Zm0 7h2m7 0h2"/><circle cx="7" cy="15" r="1"/><circle cx="17" cy="15" r="1"/></>,food:<><path d="M5 3v7m3-7v7m-3-3h3M7 10v11m9-18v18m0-18c3 4 3 8 0 10"/></>,parcel:<><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Zm-8 4.5 8 5 8-5M12 12.5V21m-4-15 8 5"/></>,blood:<><path d="M12 3s-6 7-6 12a6 6 0 0 0 12 0c0-5-6-12-6-12Z"/><path d="M12 11v7m-3.5-3.5h7"/></>};return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[type]}</svg>}
