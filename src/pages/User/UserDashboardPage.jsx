@@ -5,6 +5,7 @@ import scooter from '../../assets/signinpage.png'
 import { readAuthSession, signOut } from '../../auth/session'
 import { getOrderHistory } from '../../services/orderHistoryApi'
 import { getNotifications, getUnreadNotificationCount } from '../../services/notificationApi'
+import CustomerLocationPicker from '../../components/CustomerLocationPicker'
 
 const services = [
   { name: 'Ride Sharing', description: 'Book a ride quickly and at a fair price.', icon: 'car', color: 'ride', href: '/ride' },
@@ -34,7 +35,8 @@ function Brand() {
 function DashboardNavbar() {
   const [menu, setMenu] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [location, setLocation] = useState('Dhaka')
+  const [location, setLocation] = useState(() => { try { return JSON.parse(localStorage.getItem('dorkar-selected-location') || 'null') } catch { return null } })
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false)
   const user = readAuthSession()?.user
   const token = readAuthSession()?.accessToken
   const [notifications, setNotifications] = useState([])
@@ -55,6 +57,12 @@ function DashboardNavbar() {
   const userName = user?.name || 'Dorkar user'
   const initials = userName.split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('')
   const links = [['Home', '/dashboard'], ['Ride', '/ride'], ['Food', '/food'], ['Parcel', '/parcel'], ['Blood Donation', '/blood']]
+  useEffect(() => {
+    const updateLocation = event => setLocation(event.detail || null)
+    window.addEventListener('dorkar-location-change', updateLocation)
+    return () => window.removeEventListener('dorkar-location-change', updateLocation)
+  }, [])
+  const locationTitle = location?.formattedAddress || location?.address || 'Choose delivery location'
 
   return <header className="dashboard-nav">
     <div className="dashboard-nav-inner">
@@ -65,8 +73,7 @@ function DashboardNavbar() {
       </nav>
       <div className="dashboard-nav-actions">
         <div className="nav-menu-wrap">
-          <button className="location-trigger" onClick={() => setMenu(menu === 'location' ? '' : 'location')} aria-expanded={menu === 'location'}><Icon name="pin" size={19}/><span>{location}</span><Icon name="chevron" size={17}/></button>
-          {menu === 'location' && <div className="nav-popover location-popover"><b>Choose your area</b>{['Dhaka', 'Chattogram', 'Sylhet', 'Khulna'].map((city) => <button key={city} onClick={() => { setLocation(city); setMenu('') }}>{city}{city === location && <span>Current</span>}</button>)}</div>}
+          <button className="location-trigger" onClick={() => setLocationPickerOpen(true)} aria-haspopup="dialog"><Icon name="pin" size={19}/><span title={locationTitle}>{locationTitle}</span><Icon name="chevron" size={17}/></button>
         </div>
         <div className="nav-menu-wrap">
           <button className="notification-trigger" aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'} aria-expanded={menu === 'notifications'} onClick={() => setMenu(menu === 'notifications' ? '' : 'notifications')}><Icon name="bell"/>{unreadCount > 0 && <i/>}</button>
@@ -78,6 +85,7 @@ function DashboardNavbar() {
         </div>
       </div>
     </div>
+    {locationPickerOpen && <div className="customer-location-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setLocationPickerOpen(false) }}><section className="customer-location-modal" role="dialog" aria-modal="true" aria-label="Choose delivery location"><button className="customer-location-modal-close" type="button" onClick={() => setLocationPickerOpen(false)} aria-label="Close location picker">×</button><CustomerLocationPicker label="Delivery location" value={location} onSelect={selected => { setLocation(selected); setLocationPickerOpen(false) }}/></section></div>}
   </header>
 }
 

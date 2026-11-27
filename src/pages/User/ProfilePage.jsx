@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { readAuthSession, saveAuthSession, signOut } from '../../auth/session'
 import { isAdminRole } from '../../auth/adminRoles'
 import { createSavedLocation, deleteSavedLocation, getMyProfile, getSavedLocations, updateMyProfile, updateSavedLocation, uploadMyProfilePhoto } from '../../services/profileApi'
+import CustomerLocationPicker from '../../components/CustomerLocationPicker'
 import heroScenery from '../../assets/Hero-bg-illlustration.png'
 import './ProfilePage.css'
 
@@ -59,7 +60,7 @@ export default function ProfilePage({ editable = false }) {
   const [locations, setLocations] = useState([])
   const [locationsLoading, setLocationsLoading] = useState(!isAdmin && !isRiderPartner)
   const [editingLocation, setEditingLocation] = useState(null)
-  const [locationDraft, setLocationDraft] = useState({ label: 'Home', address: '' })
+  const [locationDraft, setLocationDraft] = useState({ label: 'Home', address: '', latitude: null, longitude: null, houseNumber: '', building: '', apartment: '', floor: '', landmark: '' })
   const [logoutOpen, setLogoutOpen] = useState(false)
   const avatarInput = useRef(null)
 
@@ -185,14 +186,14 @@ export default function ProfilePage({ editable = false }) {
 
   const saveLocation = async (event) => {
     event.preventDefault()
-    const payload = { label: locationDraft.label.toUpperCase(), address: locationDraft.address.trim(), isDefault: locations.length === 0 }
+    const payload = { ...locationDraft, label: locationDraft.label.toUpperCase(), address: locationDraft.address.trim(), isDefault: locations.length === 0 }
     try {
       if (editingLocation !== null) await updateSavedLocation(editingLocation, payload, token)
       else await createSavedLocation(payload, token)
       const current = await getSavedLocations(token)
       setLocations(Array.isArray(current) ? current.map(locationFromApi) : [])
       setEditingLocation(null)
-      setLocationDraft({ label: 'Home', address: '' })
+      setLocationDraft({ label: 'Home', address: '', latitude: null, longitude: null, houseNumber: '', building: '', apartment: '', floor: '', landmark: '' })
       setShowLocationForm(false)
       setNotice('Saved location updated.')
     } catch (error) {
@@ -260,11 +261,11 @@ export default function ProfilePage({ editable = false }) {
         </section>
 
         {!isAdmin&&!isRiderPartner&&<section className="profile-panel saved-locations-panel" id="saved-locations">
-          <div className="profile-panel-heading"><span><ProfileIcon name="locations"/></span><div><h2>Saved Locations</h2><p>{editable ? 'Manage the addresses you use most.' : 'Your frequent pickup and delivery addresses.'}</p></div>{editable&&<button className="profile-add-button" type="button" onClick={()=>{setEditingLocation(null);setLocationDraft({label:'Home',address:''});setShowLocationForm(value=>!value)}}>{showLocationForm?'×':'+'}<span>{showLocationForm?'Close':'Add location'}</span></button>}</div>
+          <div className="profile-panel-heading"><span><ProfileIcon name="locations"/></span><div><h2>Saved Locations</h2><p>{editable ? 'Manage the addresses you use most.' : 'Your frequent pickup and delivery addresses.'}</p></div>{editable&&<button className="profile-add-button" type="button" onClick={()=>{setEditingLocation(null);setLocationDraft({label:'Home',address:'',latitude:null,longitude:null,houseNumber:'',building:'',apartment:'',floor:'',landmark:''});setShowLocationForm(value=>!value)}}>{showLocationForm?'×':'+'}<span>{showLocationForm?'Close':'Add location'}</span></button>}</div>
           {locationsLoading&&<div className="profile-empty-state"><div><b>Loading saved locations…</b></div></div>}
           {!locationsLoading&&locations.length===0&&!showLocationForm&&<div className="profile-empty-state"><span><ProfileIcon name="home"/></span><div><b>No saved locations yet</b><p>Add your home, work, or another frequent address.</p></div></div>}
-          {!locationsLoading&&locations.map(location=><div className="profile-location-row" key={location.id}><span className="profile-location-icon"><ProfileIcon name={location.label==='Work'?'work':'home'}/></span><div><b>{location.label}{location.isDefault?' · Default':''}</b><p>{location.address}</p></div>{editable&&<><button type="button" aria-label={`Edit ${location.label} location`} onClick={()=>{setEditingLocation(location.id);setLocationDraft({label:location.label,address:location.address});setShowLocationForm(true)}}><ProfileIcon name="edit"/></button><button type="button" aria-label={`Delete ${location.label} location`} onClick={()=>removeLocation(location.id)}>×</button></>}</div>)}
-          {editable&&showLocationForm&&<form className="profile-location-form" onSubmit={saveLocation}><label className="profile-field"><span>Location label</span><select value={locationDraft.label} onChange={event=>setLocationDraft(current=>({...current,label:event.target.value}))}><option>Home</option><option>Work</option><option>Other</option></select></label><label className="profile-field"><span>Address</span><input value={locationDraft.address} onChange={event=>setLocationDraft(current=>({...current,address:event.target.value}))} placeholder="House, road, area, city" required/></label><button className="button primary" type="submit">{editingLocation===null?'Save location':'Update location'}</button></form>}
+          {!locationsLoading&&locations.map(location=><div className="profile-location-row" key={location.id}><span className="profile-location-icon"><ProfileIcon name={location.label==='Work'?'work':'home'}/></span><div><b>{location.label}{location.isDefault?' · Default':''}</b><p>{location.address}{location.landmark?` · Near ${location.landmark}`:''}</p></div>{editable&&<><button type="button" aria-label={`Edit ${location.label} location`} onClick={()=>{setEditingLocation(location.id);setLocationDraft({...location,label:location.label==='Other'?'Other':location.label});setShowLocationForm(true)}}><ProfileIcon name="edit"/></button><button type="button" aria-label={`Delete ${location.label} location`} onClick={()=>removeLocation(location.id)}>×</button></>}</div>)}
+          {editable&&showLocationForm&&<form className="profile-location-form" onSubmit={saveLocation}><label className="profile-field"><span>Location label</span><select value={locationDraft.label} onChange={event=>setLocationDraft(current=>({...current,label:event.target.value}))}><option>Home</option><option>Work</option><option>Other</option></select></label><CustomerLocationPicker compact allowSave={false} label="Select an address" value={locationDraft} onSelect={selection=>setLocationDraft(current=>({...current,...selection,address:selection.formattedAddress||selection.address}))}/><label className="profile-field"><span>Address preview</span><input value={locationDraft.address} onChange={event=>setLocationDraft(current=>({...current,address:event.target.value}))} placeholder="House, road, area, city" required/></label><button className="button primary" type="submit">{editingLocation===null?'Save location':'Update location'}</button></form>}
         </section>}
 
       </div>
